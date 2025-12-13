@@ -1,4 +1,4 @@
-import initApp from "./server";
+import initApp from './server';
 
 const PORT = process.env.PORT || 3000;
 
