@@ -1,14 +1,20 @@
-import dotenv from "dotenv";
-import mongoose from "mongoose";
-import express, { Express } from "express";
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import express, { Express } from 'express';
+
+import postRoutes from './routes/postRoutes';
 
 dotenv.config();
-
 const app = express();
 
 const initApp = () =>
   new Promise<Express>((resolve, reject) => {
-    app.use("/", (_, res) => res.send("health check"));
+    app.get('/', (_, res) => res.send('health check'));
+
+    app.use(express.urlencoded({ extended: false }));
+    app.use(express.json());
+    
+    app.use('/posts', postRoutes);
 
     const dbUrl = process.env.DATABASE_URL;
 
@@ -18,10 +24,10 @@ const initApp = () =>
       });
 
       const db = mongoose.connection;
-      db.on("error", (error) => console.error(error));
-      db.once("open", () => console.log("Connected to Database"));
+      db.on('error', (error) => console.error(error));
+      db.once('open', () => console.log('Connected to Database'));
     } else {
-      reject("DATABASE_URL is not defined");
+      reject('DATABASE_URL is not defined');
     }
   });
 

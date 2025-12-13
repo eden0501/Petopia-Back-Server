@@ -1,0 +1,40 @@
+# Get all posts
+GET http://localhost:3000/posts
+Accept: application/json
+
+###
+
+# Get a post by id
+GET http://localhost:3000/posts/693d6f4cf91d8fc96c6a3cf9
+ 
+###
+
+# Get posts by sender
+GET http://localhost:3000/posts?sender=693d6e2f3ce1b793c84003cf
+Accept: application/json
+
+###
+
+# Add a new post
+POST http://localhost:3000/posts
+Content-Type: application/json
+
+{
+  "title": "Hello World",
+  "content": "This is a test post",
+  "type": "Other", 
+  "authorId": "693d6e2f3ce1b793c84003cf"
+}
+
+###
+
+# Update a post
+PUT http://localhost:3000/posts/693d6f4cf91d8fc96c6a3cf9
+Content-Type: application/json
+
+{
+  "title": "Hello World",
+  "content": "This is an updated test post",
+  "type": "Knowledge", 
+  "authorId": "693d6e2f3ce1b793c84003cf"
+}

@@ -1,5 +1,6 @@
 export enum PostTypes {
-    RESCUE = 'Rescue', 
+    REPORT = 'Report', 
     KNOWLEDGE = 'Knowledge', 
-    DONATION = 'Donation'
+    DONATION = 'Donation', 
+    OTHER = 'Other',
 }

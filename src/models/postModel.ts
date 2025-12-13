@@ -1,5 +1,7 @@
-import mongoose from "mongoose";
-import { PostTypes } from "../consts/postConsts";
+import mongoose from 'mongoose';
+
+import User from './userModel';
+import { PostTypes } from '../consts/postConsts';
 
 const postSchema = new mongoose.Schema({
   title: {
@@ -22,8 +24,16 @@ const postSchema = new mongoose.Schema({
   authorId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "User",
+    ref: 'User',
   },
 });
 
-export default mongoose.model("Post", postSchema);
+postSchema.pre('save', async function () {
+  const isExist = await User.exists({ _id: this.authorId });
+
+  if (!isExist) {
+    throw new Error('Author does not exist');
+  }
+});
+
+export default mongoose.model('Post', postSchema);
