@@ -1,18 +1,22 @@
-import { ParsedQs } from 'qs';
+import { PostQueryParams } from '../types/postInterfaces';
 
-const queryToFilterMappings: Record<string, string> = {
+const queryToFilterMappings: Record<keyof PostQueryParams, string> = {
   sender: 'authorId',
 };
 
-export const mapPostQueryToFilter = (query: ParsedQs) =>
-  Object.keys(query).reduce((filterObj: Record<string, any>, queryKey) => {
-    const filterKey = queryToFilterMappings[queryKey];
+export const mapPostQueryToFilter = (query: PostQueryParams) =>
+  Object.entries(query).reduce(
+    (filterObj: Record<string, any>, [queryKey, queryValue]) => {
+      const filterKey =
+        queryToFilterMappings[queryKey as keyof PostQueryParams];
 
-    if (filterKey) {
-      filterObj[filterKey] = query[queryKey];
-    } else {
-      filterObj[queryKey] = query[queryKey];
-    }
+      if (filterKey) {
+        filterObj[filterKey] = queryValue;
+      } else {
+        filterObj[queryKey] = queryValue;
+      }
 
-    return filterObj;
-  }, {});
+      return filterObj;
+    },
+    {}
+  );

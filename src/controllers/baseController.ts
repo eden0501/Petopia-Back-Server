@@ -1,15 +1,16 @@
 import { ParsedQs } from 'qs';
+import { Model } from 'mongoose';
 import status from 'http-status';
 import { Request, Response } from 'express';
 
 import { getErrorMessage } from '../utils';
 
-class BaseController {
-  model: any;
+class BaseController<T> {
+  model: Model<T>;
   mapQuery?: (query: ParsedQs) => Record<string, any>;
 
   constructor(
-    dataModel: any,
+    dataModel: Model<T>,
     mapQueryToFilter?: (query: ParsedQs) => Record<string, any>
   ) {
     this.model = dataModel;

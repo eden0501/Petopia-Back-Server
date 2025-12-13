@@ -2,8 +2,9 @@ import mongoose from 'mongoose';
 
 import User from './userModel';
 import { PostTypes } from '../consts/postConsts';
+import { PostInterface } from '../types/postInterfaces';
 
-const postSchema = new mongoose.Schema({
+const postSchema = new mongoose.Schema<PostInterface>({
   title: {
     type: String,
     required: true,
