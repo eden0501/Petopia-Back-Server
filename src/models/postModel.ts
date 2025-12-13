@@ -7,24 +7,23 @@ const postSchema = new mongoose.Schema({
     required: true,
   },
   content: {
-    type: String, 
+    type: String,
     required: true,
-  }, 
+  },
   createdAt: {
     type: Date,
     default: Date.now,
-  }, 
+  },
   type: {
     type: String,
     enum: Object.values(PostTypes),
-    required: true
+    required: true,
   },
-  // authorId: {
-  //   type: mongoose.Schema.Types.ObjectId, 
-  //   required: true, 
-  //   ref: "User"
-  // }, 
+  authorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
+  },
 });
 
-
-export default mongoose.model("Post", postSchema)
+export default mongoose.model("Post", postSchema);

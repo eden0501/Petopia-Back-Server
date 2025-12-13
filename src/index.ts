@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 import express, { Express } from "express";
 import mongoose from "mongoose";
 
+import postRoutes from "./routes/postRoutes";
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,6 +12,8 @@ const initApp = () => {
   const promise = new Promise<Express>((resolve, reject) => {
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
+
+    app.use("posts", postRoutes);
 
     const dbUri = process.env.MONGODB_URI;
     if (!dbUri) {
