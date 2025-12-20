@@ -1,10 +1,8 @@
 import mongoose from "mongoose";
-import status from "http-status";
 
 import User from "./userModel";
 import { PostTypes } from "../consts/postConsts";
 import { PostInterface } from "../types/postInterfaces";
-import { CustomError } from "../utils/errorUtils";
 
 const postSchema = new mongoose.Schema<PostInterface>({
   title: {
