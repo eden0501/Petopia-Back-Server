@@ -3,19 +3,21 @@ import mongoose from 'mongoose';
 import express, { Express } from 'express';
 
 import postRoutes from './routes/postRoutes';
+import errorMiddleware from './middlewares/errorMiddleware';
 
 dotenv.config();
 const app = express();
 
 const initApp = () =>
   new Promise<Express>((resolve, reject) => {
-    app.get('/', (_, res) => res.send('health check'));
+    app.get('/', (_, res) => res.send('Health check'));
 
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
-    
-    app.use('/posts', postRoutes);
 
+    app.use('/posts', postRoutes);
+    app.use(errorMiddleware);
+    
     const dbUrl = process.env.DATABASE_URL;
 
     if (dbUrl) {

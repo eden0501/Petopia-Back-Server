@@ -10,6 +10,6 @@ router.get('/:id', postController.getById.bind(postController));
 
 router.post('/', postController.create.bind(postController));
 
-router.put('/:id', postController.update.bind(postController));
+router.put('/:id', postController.replace.bind(postController));
 
 export default router;

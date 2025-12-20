@@ -1,8 +1,10 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+import status from "http-status";
 
-import User from './userModel';
-import { PostTypes } from '../consts/postConsts';
-import { PostInterface } from '../types/postInterfaces';
+import User from "./userModel";
+import { PostTypes } from "../consts/postConsts";
+import { PostInterface } from "../types/postInterfaces";
+import { CustomError } from "../utils/errorUtils";
 
 const postSchema = new mongoose.Schema<PostInterface>({
   title: {
@@ -25,16 +27,23 @@ const postSchema = new mongoose.Schema<PostInterface>({
   authorId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: 'User',
+    ref: "User",
   },
 });
 
-postSchema.pre('save', async function () {
+postSchema.pre("validate", async function () {
   const isExist = await User.exists({ _id: this.authorId });
 
   if (!isExist) {
-    throw new Error('Author does not exist');
+    const err = new mongoose.Error.ValidatorError({
+      message: "Author does not exist",
+      path: "authorId",
+    });
+
+    const validationError = new mongoose.Error.ValidationError();
+    validationError.addError("authorId", err);
+    throw validationError;
   }
 });
 
-export default mongoose.model('Post', postSchema);
+export default mongoose.model("Post", postSchema);

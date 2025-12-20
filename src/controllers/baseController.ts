@@ -1,9 +1,9 @@
 import { ParsedQs } from "qs";
 import { Model } from "mongoose";
 import status from "http-status";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
-import { getErrorMessage } from "../utils";
+import { CustomError } from "../utils/errorUtils";
 
 class BaseController<T> {
   model: Model<T>;
@@ -17,77 +17,98 @@ class BaseController<T> {
     this.mapQuery = mapQueryToFilter;
   }
 
-  async get(req: Request, res: Response) {
-    const filter = this.mapQuery ? this.mapQuery(req.query) : req.query;
+  async get({ query }: Request, res: Response, next: NextFunction) {
+    const filter = this.mapQuery ? this.mapQuery(query) : query;
 
     try {
       const data = await this.model.find(filter || {});
 
       return res.json(data);
     } catch (error) {
-      res.status(status.INTERNAL_SERVER_ERROR).json({
-        error: getErrorMessage(error),
-      });
+      return next(error);
     }
   }
 
-  async getById({ params }: Request, res: Response) {
+  async getById({ params }: Request, res: Response, next: NextFunction) {
     try {
-      const data = await this.model.findById(params?.id);
+      if (!params?.id) {
+        return next(
+          new CustomError(status.BAD_REQUEST, "ID parameter is required")
+        );
+      }
+
+      const data = await this.model.findById(params.id);
 
       return !data
-        ? res.status(status.NOT_FOUND).json({ error: "Data not found" })
+        ? next(new CustomError(status.NOT_FOUND, "Data not found"))
         : res.json(data);
     } catch (error) {
-      res.status(status.INTERNAL_SERVER_ERROR).json({
-        error: getErrorMessage(error),
-      });
+      return next(error);
     }
   }
 
-  async create({ body }: Request, res: Response) {
+  async create({ body }: Request, res: Response, next: NextFunction) {
     try {
+      if (!body || Object.keys(body).length === 0) {
+        return next(
+          new CustomError(status.BAD_REQUEST, "Request body is required")
+        );
+      }
+
       const createdData = await this.model.create(body);
 
       return res.status(status.CREATED).json(createdData);
     } catch (error) {
-      res.status(status.INTERNAL_SERVER_ERROR).json({
-        error: getErrorMessage(error),
-      });
+      return next(error);
     }
   }
 
-  async deleteById(req: Request, res: Response) {
-    const id = req.params.id;
-
+  async deleteById({ params }: Request, res: Response, next: NextFunction) {
     try {
-      const deletedData = await this.model.findByIdAndDelete(id);
+      if (!params?.id) {
+        return next(
+          new CustomError(status.BAD_REQUEST, "ID parameter is required")
+        );
+      }
 
-      return res.send(deletedData);
+      const deletedData = await this.model.findByIdAndDelete(params.id);
+
+      return !deletedData
+        ? next(new CustomError(status.NOT_FOUND, "Data not found"))
+        : res.status(status.OK).send("Successfully deleted");
     } catch (error) {
-      res.status(status.INTERNAL_SERVER_ERROR).json({
-        error: getErrorMessage(error),
-      });
+      return next(error);
     }
   }
 
-  async update(req: Request, res: Response) {
-    const id = req.params.id;
-    const obj = req.body;
-
+  async replace({ params, body }: Request, res: Response, next: NextFunction) {
     try {
-      const updatedData = await this.model.findByIdAndUpdate(id, obj, {
-        new: true,
-        runValidators: true,
-      });
+      if (!body || Object.keys(body).length === 0) {
+        return next(
+          new CustomError(status.BAD_REQUEST, "Request body is required")
+        );
+      }
+
+      if (!params?.id) {
+        return next(
+          new CustomError(status.BAD_REQUEST, "ID parameter is required")
+        );
+      }
+
+      const updatedData = await this.model.findOneAndReplace(
+        { _id: params.id },
+        body,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
 
       return !updatedData
-        ? res.status(status.NOT_FOUND).json({ error: "Data not found" })
+        ? next(new CustomError(status.NOT_FOUND, "Data not found"))
         : res.json(updatedData);
     } catch (error) {
-      res.status(status.INTERNAL_SERVER_ERROR).json({
-        error: getErrorMessage(error),
-      });
+      return next(error);
     }
   }
 }
