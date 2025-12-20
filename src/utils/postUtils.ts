@@ -1,6 +1,6 @@
-import { PostQueryParams } from '../types/postInterfaces';
+import { PostInterface, PostQueryParams } from '../types/postInterfaces';
 
-const queryToFilterMappings: Record<keyof PostQueryParams, string> = {
+const queryToFilterMappings: Record<keyof PostQueryParams, keyof PostInterface> = {
   sender: 'authorId',
 };
 

@@ -1,9 +1,9 @@
-import { ParsedQs } from 'qs';
-import { Model } from 'mongoose';
-import status from 'http-status';
-import { Request, Response } from 'express';
+import { ParsedQs } from "qs";
+import { Model } from "mongoose";
+import status from "http-status";
+import { Request, Response } from "express";
 
-import { getErrorMessage } from '../utils';
+import { getErrorMessage } from "../utils";
 
 class BaseController<T> {
   model: Model<T>;
@@ -23,7 +23,7 @@ class BaseController<T> {
     try {
       const data = await this.model.find(filter || {});
 
-      res.json(data);
+      return res.json(data);
     } catch (error) {
       res.status(status.INTERNAL_SERVER_ERROR).json({
         error: getErrorMessage(error),
@@ -31,17 +31,13 @@ class BaseController<T> {
     }
   }
 
-  async getById(req: Request, res: Response) {
-    const id = req.params.id;
-
+  async getById({ params }: Request, res: Response) {
     try {
-      const data = await this.model.findById(id);
+      const data = await this.model.findById(params?.id);
 
-      if (!data) {
-        return res.status(status.NOT_FOUND).json({ error: 'Data not found' });
-      } else {
-        res.json(data);
-      }
+      return !data
+        ? res.status(status.NOT_FOUND).json({ error: "Data not found" })
+        : res.json(data);
     } catch (error) {
       res.status(status.INTERNAL_SERVER_ERROR).json({
         error: getErrorMessage(error),
@@ -49,13 +45,11 @@ class BaseController<T> {
     }
   }
 
-  async post(req: Request, res: Response) {
-    const obj = req.body;
-
+  async create({ body }: Request, res: Response) {
     try {
-      const createdData = await this.model.create(obj);
+      const createdData = await this.model.create(body);
 
-      res.status(status.CREATED).json(createdData);
+      return res.status(status.CREATED).json(createdData);
     } catch (error) {
       res.status(status.INTERNAL_SERVER_ERROR).json({
         error: getErrorMessage(error),
@@ -69,7 +63,7 @@ class BaseController<T> {
     try {
       const deletedData = await this.model.findByIdAndDelete(id);
 
-      res.send(deletedData);
+      return res.send(deletedData);
     } catch (error) {
       res.status(status.INTERNAL_SERVER_ERROR).json({
         error: getErrorMessage(error),
@@ -77,7 +71,7 @@ class BaseController<T> {
     }
   }
 
-  async put(req: Request, res: Response) {
+  async update(req: Request, res: Response) {
     const id = req.params.id;
     const obj = req.body;
 
@@ -87,11 +81,9 @@ class BaseController<T> {
         runValidators: true,
       });
 
-      if (!updatedData) {
-        return res.status(status.NOT_FOUND).json({ error: 'Data not found' });
-      } else {
-        res.json(updatedData);
-      }
+      return !updatedData
+        ? res.status(status.NOT_FOUND).json({ error: "Data not found" })
+        : res.json(updatedData);
     } catch (error) {
       res.status(status.INTERNAL_SERVER_ERROR).json({
         error: getErrorMessage(error),
