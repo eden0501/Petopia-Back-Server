@@ -9,8 +9,8 @@ GET http://localhost:3000/posts/693d6f4cf91d8fc96c6a3cf9
  
 ###
 
-# Get posts by sender
-GET http://localhost:3000/posts?sender=693d6e2f3ce1b793c84003cf
+# Get posts by author
+GET http://localhost:3000/posts?authorId=693d6e2f3ce1b793c84003cf
 Accept: application/json
 
 ###
