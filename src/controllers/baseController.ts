@@ -1,4 +1,5 @@
 import { ParsedQs } from "qs";
+import { isEmpty } from "lodash";
 import { Model } from "mongoose";
 import status from "http-status";
 import { NextFunction, Request, Response } from "express";
@@ -7,21 +8,14 @@ import { CustomError } from "../utils/errorUtils";
 
 class BaseController<T> {
   model: Model<T>;
-  mapQuery?: (query: ParsedQs) => Record<string, any>;
 
-  constructor(
-    dataModel: Model<T>,
-    mapQueryToFilter?: (query: ParsedQs) => Record<string, any>
-  ) {
+  constructor(dataModel: Model<T>) {
     this.model = dataModel;
-    this.mapQuery = mapQueryToFilter;
   }
 
   async get({ query }: Request, res: Response, next: NextFunction) {
-    const filter = this.mapQuery ? this.mapQuery(query) : query;
-
     try {
-      const data = await this.model.find(filter || {});
+      const data = await this.model.find(query || {});
 
       return res.json(data);
     } catch (error) {
@@ -49,7 +43,7 @@ class BaseController<T> {
 
   async create({ body }: Request, res: Response, next: NextFunction) {
     try {
-      if (!body || Object.keys(body).length === 0) {
+      if (isEmpty(body)) {
         return next(
           new CustomError(status.BAD_REQUEST, "Request body is required")
         );
@@ -83,7 +77,7 @@ class BaseController<T> {
 
   async replace({ params, body }: Request, res: Response, next: NextFunction) {
     try {
-      if (!body || Object.keys(body).length === 0) {
+      if (isEmpty(body)) {
         return next(
           new CustomError(status.BAD_REQUEST, "Request body is required")
         );

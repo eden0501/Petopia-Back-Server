@@ -5,18 +5,18 @@ import { Request, Response, NextFunction } from "express";
 import { CustomError } from "../utils/errorUtils";
 
 const errorMiddleware = (
-  err: Error,
+  error: Error,
   _req: Request,
   res: Response,
   _next: NextFunction
 ) => {
-  if (err instanceof CustomError) {
-    return res.status(err.status).json({ error: err.message });
+  if (error instanceof CustomError) {
+    return res.status(error.status).json({ error: error.message });
   }
 
-  if (err instanceof MongooseError) {
-    if (err.name === "ValidationError" || err.name === "CastError") {
-      return res.status(status.BAD_REQUEST).json({ error: err.message });
+  if (error instanceof MongooseError) {
+    if (error.name === "ValidationError" || error.name === "CastError") {
+      return res.status(status.BAD_REQUEST).json({ error: error.message });
     }
 
     return res
@@ -26,7 +26,7 @@ const errorMiddleware = (
 
   return res
     .status(status.INTERNAL_SERVER_ERROR)
-    .json({ error: "Failed to execute request due to internal server error" });
+    .json({ error: "Something went wrong, please try again later" });
 };
 
 export default errorMiddleware;

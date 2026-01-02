@@ -8,7 +8,3 @@ export interface PostInterface extends Document {
   authorId: Types.ObjectId;
   createdAt: Date;
 };
-
-export interface PostQueryParams {
-  sender?: string;
-};
