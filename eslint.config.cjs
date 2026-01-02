@@ -17,7 +17,7 @@ module.exports = [
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
-      quotes: ["error", "single"],
+      quotes: ["error", "double"],
       "eol-last": ["error", "always"],
     },
   },
