@@ -1,5 +1,5 @@
-import { Document, Types } from 'mongoose';
-import { PostTypes } from '../consts/postConsts';
+import { Document, Types } from "mongoose";
+import { PostTypes } from "../consts/postConsts";
 
 export interface PostInterface extends Document {
   title: string;
