@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import express, { Express } from "express";
 
+import userRoutes from "./routes/userRoutes";
 import postRoutes from "./routes/postRoutes";
 import errorMiddleware from "./middlewares/errorMiddleware";
 
@@ -15,9 +16,10 @@ const initApp = () =>
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
 
+    app.use("/users", userRoutes);
     app.use("/posts", postRoutes);
     app.use(errorMiddleware);
-    
+
     const dbUrl = process.env.DATABASE_URL;
 
     if (dbUrl) {

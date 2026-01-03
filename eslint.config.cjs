@@ -19,6 +19,15 @@ module.exports = [
       ...tsPlugin.configs.recommended.rules,
       quotes: ["error", "double"],
       "eol-last": ["error", "always"],
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          args: "all",
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
     },
   },
 ];
