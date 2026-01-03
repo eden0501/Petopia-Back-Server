@@ -1,4 +1,3 @@
-import { ParsedQs } from "qs";
 import { isEmpty } from "lodash";
 import { Model } from "mongoose";
 import status from "http-status";

@@ -1,14 +1,13 @@
 import status from "http-status";
 import { MongooseError } from "mongoose";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 
 import { CustomError } from "../utils/errorUtils";
 
 const errorMiddleware = (
   error: Error,
   _req: Request,
-  res: Response,
-  _next: NextFunction
+  res: Response
 ) => {
   if (error instanceof CustomError) {
     return res.status(error.status).json({ error: error.message });
