@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc && node --env-file=.env ./dist/index.js",
-    "dev": "nodemon src/index.ts"
+    "dev": "nodemon src/index.ts",
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "eslint . --ext .js,.ts --fix"
   },
   "repository": {
     "type": "git",
@@ -23,7 +25,10 @@
     "@types/express": "^5.0.6",
     "@types/lodash": "^4.17.21",
     "@types/node": "^24.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.49.0",
+    "@typescript-eslint/parser": "^8.49.0",
     "dotenv": "^17.2.3",
+    "eslint": "^9.39.2",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
