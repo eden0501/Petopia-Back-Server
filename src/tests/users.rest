@@ -9,7 +9,7 @@ GET http://localhost:3000/users/69590f00d8cfe5f37f38ca02
  
 ###
 
-# Get users by author
+# Get users by username
 GET http://localhost:3000/users?username=eden0501
 Accept: application/json
 

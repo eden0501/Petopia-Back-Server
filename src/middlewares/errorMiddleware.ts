@@ -28,8 +28,14 @@ const errorMiddleware = (
   }
 
   if (error instanceof MongoServerError) {
+    console.log("error", error);
     if (error.code === MONGO_ERR_DUPLICATE_KEY) {
-      return res.status(status.CONFLICT).json({ error: "Duplicate key error" });
+      return res
+        .status(status.CONFLICT)
+        .json({
+          error: "Unique constraint error",
+          keys: Object.keys(error.keyValue),
+        });
     }
 
     return res
