@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
+import { isEmpty } from "lodash";
 
-import User from "./userModel";
 import Post from "./postModel";
+import User from "./userModel";
 import { CommentInterface } from "../types/commentInterfaces";
 
 const commentSchema = new mongoose.Schema<CommentInterface>({
@@ -26,28 +27,31 @@ const commentSchema = new mongoose.Schema<CommentInterface>({
 });
 
 commentSchema.pre("validate", async function () {
+  const validationError = new mongoose.Error.ValidationError();
   const isPostExist = await Post.exists({ _id: this.postId });
   const isUserExist = await User.exists({ _id: this.authorId });
 
   if (!isPostExist) {
-    const err = new mongoose.Error.ValidatorError({
-      message: "Post does not exist",
-      path: "postId",
-    });
-
-    const validationError = new mongoose.Error.ValidationError();
-    validationError.addError("postId", err);
-    throw validationError;
+    validationError.addError(
+      "postId",
+      new mongoose.Error.ValidatorError({
+        message: "Post does not exist",
+        path: "postId",
+      })
+    );
   }
 
   if (!isUserExist) {
-    const err = new mongoose.Error.ValidatorError({
-      message: "Author does not exist",
-      path: "authorId",
-    });
+    validationError.addError(
+      "authorId",
+      new mongoose.Error.ValidatorError({
+        message: "Author does not exist",
+        path: "authorId",
+      })
+    );
+  }
 
-    const validationError = new mongoose.Error.ValidationError();
-    validationError.addError("authorId", err);
+  if (!isEmpty(validationError.errors)) {
     throw validationError;
   }
 });
