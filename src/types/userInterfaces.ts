@@ -1,4 +1,4 @@
-import { Date } from 'mongoose';
+import { Date } from "mongoose";
 
 export interface UserInterface extends Document {
   username: string;
