@@ -4,6 +4,7 @@ import express, { Express } from "express";
 
 import userRoutes from "./routes/userRoutes";
 import postRoutes from "./routes/postRoutes";
+import commentRoutes from "./routes/commentRoutes";
 import errorMiddleware from "./middlewares/errorMiddleware";
 
 dotenv.config();
@@ -18,6 +19,7 @@ const initApp = () =>
 
     app.use("/users", userRoutes);
     app.use("/posts", postRoutes);
+    app.use("/comments", commentRoutes);
     app.use(errorMiddleware);
 
     const dbUrl = process.env.DATABASE_URL;
