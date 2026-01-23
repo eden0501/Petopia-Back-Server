@@ -1,8 +1,11 @@
 import status from "http-status";
 import { MongooseError } from "mongoose";
+import { MongoServerError } from "mongodb";
 import { Request, Response, NextFunction } from "express";
 
 import { CustomError } from "../utils/errorUtils";
+
+const MONGO_ERR_DUPLICATE_KEY = 11000;
 
 const errorMiddleware = (
   error: Error,
@@ -17,6 +20,22 @@ const errorMiddleware = (
   if (error instanceof MongooseError) {
     if (error.name === "ValidationError" || error.name === "CastError") {
       return res.status(status.BAD_REQUEST).json({ error: error.message });
+    }
+
+    return res
+      .status(status.INTERNAL_SERVER_ERROR)
+      .json({ error: "Database related error" });
+  }
+
+  if (error instanceof MongoServerError) {
+    console.log("error", error);
+    if (error.code === MONGO_ERR_DUPLICATE_KEY) {
+      return res
+        .status(status.CONFLICT)
+        .json({
+          error: "Unique constraint error",
+          keys: Object.keys(error.keyValue),
+        });
     }
 
     return res

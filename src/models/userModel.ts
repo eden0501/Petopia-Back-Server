@@ -8,18 +8,18 @@ const userSchema = new mongoose.Schema<UserInterface>({
     unique: true,
   },
   password: {
-    type: String, 
+    type: String,
+    select: false,
     required: true,
-  }, 
+  },
   dateOfBirth: {
-    type: Date, 
+    type: Date,
     default: Date.now,
   },
   petsCount: {
-    type: Number, 
-    default: 0, 
-  }
+    type: Number,
+    default: 0,
+  },
 });
-
 
 export default mongoose.model("User", userSchema);
