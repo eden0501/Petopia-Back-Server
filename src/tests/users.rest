@@ -20,7 +20,8 @@ POST http://localhost:3000/users
 Content-Type: application/json
 
 {
-  "username": "eden0501",
+  "username": "edecn0501",
+  "email": "eden@cf.com",
   "password": "123456",
   "dateOfBirth": "2003-05-01", 
   "petsCount": "2"

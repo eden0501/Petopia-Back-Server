@@ -3,8 +3,10 @@ import mongoose from "mongoose";
 import express, { Express } from "express";
 
 import userRoutes from "./routes/userRoutes";
+import authRoutes from "./routes/authRoutes";
 import postRoutes from "./routes/postRoutes";
 import commentRoutes from "./routes/commentRoutes";
+import authMiddleware from "./middlewares/authMiddleware";
 import errorMiddleware from "./middlewares/errorMiddleware";
 
 dotenv.config();
@@ -16,6 +18,10 @@ const initApp = () =>
 
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
+
+    app.use("/auth", authRoutes);
+
+    app.use(authMiddleware);
 
     app.use("/users", userRoutes);
     app.use("/posts", postRoutes);

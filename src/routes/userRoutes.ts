@@ -7,8 +7,6 @@ router.get("/", userController.get.bind(userController));
 
 router.get("/:id", userController.getById.bind(userController));
 
-router.post("/", userController.create.bind(userController));
-
 router.put("/:id", userController.replace.bind(userController));
 
 export default router;

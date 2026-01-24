@@ -1,0 +1,22 @@
+# register a new user
+POST  http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@gmail.com",
+  "password": "password123",
+  "username": "user-name",
+  "dateOfBirth": "2003-05-01", 
+  "petsCount": "2"
+}
+
+
+###
+# login an existing user
+POST  http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "eden03.b@gmail.com",
+  "password": "123456"
+}
