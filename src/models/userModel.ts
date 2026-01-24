@@ -25,6 +25,9 @@ const userSchema = new mongoose.Schema<UserInterface>({
     type: Number,
     default: 0,
   },
+  refreshToken: {
+    type: [String],
+  },
 });
 
 export default mongoose.model("User", userSchema);

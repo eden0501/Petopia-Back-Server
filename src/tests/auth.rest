@@ -6,7 +6,7 @@ Content-Type: application/json
   "email": "user@gmail.com",
   "password": "password123",
   "username": "user-name",
-  "dateOfBirth": "2003-05-01", 
+  "dateOfBirth": "2003-05-01",
   "petsCount": "2"
 }
 
@@ -19,4 +19,24 @@ Content-Type: application/json
 {
   "email": "eden03.b@gmail.com",
   "password": "123456"
+}
+
+
+###
+# register a new user
+POST  http://localhost:3000/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": ""
+}
+
+
+###
+# login an existing user
+POST  http://localhost:3000/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": ""
 }

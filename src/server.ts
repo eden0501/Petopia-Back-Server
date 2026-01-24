@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import express, { Express } from "express";
 
@@ -9,7 +8,6 @@ import commentRoutes from "./routes/commentRoutes";
 import authMiddleware from "./middlewares/authMiddleware";
 import errorMiddleware from "./middlewares/errorMiddleware";
 
-dotenv.config();
 const app = express();
 
 const initApp = () =>

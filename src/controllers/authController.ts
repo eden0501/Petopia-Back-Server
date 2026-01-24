@@ -1,10 +1,9 @@
 import bcrypt from "bcrypt";
 import status from "http-status";
-import { NextFunction, Request, Response } from "express";
-
 import User from "../models/userModel";
-import { generateToken } from "../utils/token";
 import { CustomError } from "../utils/errorUtils";
+import { NextFunction, Request, Response } from "express";
+import { decodeToken, generateTokens } from "../utils/token";
 
 const validateBody = ({
   email,
@@ -32,15 +31,18 @@ export const register = async (
     const salt = await bcrypt.genSalt(10);
     const encryptedPassword = await bcrypt.hash(password, salt);
 
-    const user = await new User({
+    const user = new User({
       email,
       password: encryptedPassword,
       ...additionalInfo,
-    }).save();
+    });
 
-    res
-      .status(status.CREATED)
-      .json({ token: generateToken(user._id.toString()) });
+    const tokens = generateTokens(user._id.toString());
+    (user.refreshToken ?? []).push(tokens.refreshToken);
+
+    await user.save();
+
+    res.status(status.CREATED).json(tokens);
   } catch (error) {
     next(error);
   }
@@ -66,8 +68,83 @@ export const login = async (
       throw new CustomError(status.FORBIDDEN, "Invalid email or password");
     }
 
-    res.status(status.OK).json({ token: generateToken(user._id.toString()) });
+    const tokens = generateTokens(user._id.toString());
+    (user.refreshToken ?? []).push(tokens.refreshToken);
+
+    await user.save();
+
+    res.status(status.OK).json(tokens);
   } catch (error) {
     next(error);
   }
 };
+
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      throw new CustomError(status.BAD_REQUEST, "Refresh token is required");
+    }
+
+    const { userId } = decodeToken(refreshToken, true);
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new CustomError(status.UNAUTHORIZED, "Invalid refresh token");
+    }
+
+    user.refreshToken = [];
+
+    await user.save();
+
+    res.status(status.OK).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
+const refreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      throw new CustomError(status.BAD_REQUEST, "Refresh token is required");
+    }
+
+    const { userId } = decodeToken(refreshToken, true);
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new CustomError(status.UNAUTHORIZED, "Invalid refresh token");
+    }
+
+    if (!(user.refreshToken ?? []).includes(refreshToken)) {
+      user.refreshToken = [];
+      await user.save();
+
+      throw new CustomError(status.FORBIDDEN, "Invalid refresh token");
+    }
+
+    const tokens = generateTokens(user._id.toString());
+    user.refreshToken = [tokens.refreshToken];
+
+    await user.save();
+
+    res.status(status.OK).json(tokens);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default { register, login, logout, refreshToken };
