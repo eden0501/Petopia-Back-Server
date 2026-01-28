@@ -7,6 +7,7 @@ import postRoutes from "./routes/postRoutes";
 import commentRoutes from "./routes/commentRoutes";
 import authMiddleware from "./middlewares/authMiddleware";
 import errorMiddleware from "./middlewares/errorMiddleware";
+import { swaggerUi, specs } from "./swagger";
 
 const app = express();
 
@@ -16,6 +17,17 @@ const initApp = () =>
 
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
+
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, {
+      explorer: true,
+      customCss: ".swagger-ui .topbar { display: none }",
+      customSiteTitle: "Petopia API Documentation"
+    }));
+
+    app.get("/api-docs.json", (req, res) => {
+      res.setHeader("Content-Type", "application/json");
+      res.send(specs);
+    });
 
     app.use("/auth", authRoutes);
 
