@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema<UserInterface>({
     default: 0,
   },
   refreshToken: {
-    type: [String],
+    type: String,
   },
 });
 

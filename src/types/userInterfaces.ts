@@ -6,5 +6,5 @@ export interface UserInterface extends Document {
   password: string;
   dateOfBirth: Date;
   petsCount: number;
-  refreshToken?: string[];
+  refreshToken?: string;
 }

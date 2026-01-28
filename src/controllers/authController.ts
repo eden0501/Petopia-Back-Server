@@ -38,7 +38,7 @@ export const register = async (
     });
 
     const tokens = generateTokens(user._id.toString());
-    (user.refreshToken ?? []).push(tokens.refreshToken);
+    user.refreshToken = tokens.refreshToken;
 
     await user.save();
 
@@ -69,7 +69,7 @@ export const login = async (
     }
 
     const tokens = generateTokens(user._id.toString());
-    (user.refreshToken ?? []).push(tokens.refreshToken);
+    user.refreshToken = tokens.refreshToken;
 
     await user.save();
 
@@ -99,7 +99,7 @@ export const logout = async (
       throw new CustomError(status.UNAUTHORIZED, "Invalid refresh token");
     }
 
-    user.refreshToken = [];
+    user.refreshToken = undefined;
 
     await user.save();
 
@@ -129,15 +129,15 @@ const refreshToken = async (
       throw new CustomError(status.UNAUTHORIZED, "Invalid refresh token");
     }
 
-    if (!(user.refreshToken ?? []).includes(refreshToken)) {
-      user.refreshToken = [];
+    if (!(user.refreshToken = refreshToken)) {
+      user.refreshToken = undefined;
       await user.save();
 
       throw new CustomError(status.FORBIDDEN, "Invalid refresh token");
     }
 
     const tokens = generateTokens(user._id.toString());
-    user.refreshToken = [tokens.refreshToken];
+    user.refreshToken = tokens.refreshToken;
 
     await user.save();
 

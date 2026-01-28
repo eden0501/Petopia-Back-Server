@@ -23,7 +23,7 @@ Content-Type: application/json
 
 
 ###
-# register a new user
+# refresh user's session token
 POST  http://localhost:3000/auth/refresh-token
 Content-Type: application/json
 
@@ -33,7 +33,7 @@ Content-Type: application/json
 
 
 ###
-# login an existing user
+# logout user
 POST  http://localhost:3000/auth/logout
 Content-Type: application/json
 
