@@ -1,7 +1,7 @@
 import status from "http-status";
 import { MongooseError } from "mongoose";
 import { MongoServerError } from "mongodb";
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 
 import { CustomError } from "../utils/errorUtils";
 
@@ -11,7 +11,7 @@ const errorMiddleware = (
   error: Error,
   _req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ) => {
   if (error instanceof CustomError) {
     return res.status(error.status).json({ error: error.message });
@@ -28,14 +28,11 @@ const errorMiddleware = (
   }
 
   if (error instanceof MongoServerError) {
-    console.log("error", error);
     if (error.code === MONGO_ERR_DUPLICATE_KEY) {
-      return res
-        .status(status.CONFLICT)
-        .json({
-          error: "Unique constraint error",
-          keys: Object.keys(error.keyValue),
-        });
+      return res.status(status.CONFLICT).json({
+        error: "Unique constraint error",
+        keys: Object.keys(error.keyValue),
+      });
     }
 
     return res

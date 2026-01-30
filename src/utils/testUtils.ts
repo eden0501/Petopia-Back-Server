@@ -1,23 +1,37 @@
+import { omit } from "lodash";
+import request from "supertest";
 import { Express } from "express";
 import User from "../models/userModel";
+import { PostTypes } from "../consts/postConsts";
+import { UserInterface } from "../types/userInterfaces";
 import { PostInterface } from "../types/postInterfaces";
 import { CommentInterface } from "../types/commentInterfaces";
-import { UserInterface } from "../types/userInterfaces";
-import { PostTypes } from "../consts/postConsts";
-import mongoose from "mongoose";
 
 export const userData = {
     username: "testUser",
+    email: "test@user.com",
     password: "password123",
     dateOfBirth: new Date("1990-01-01"),
     petsCount: 1,
-} as unknown as UserInterface;
+} as UserInterface & { accessToken?: string };
 
-export const singlePostData = {
-    title: "Test Post",
-    content: "This is a test post content",
-    type: PostTypes.OTHER, 
-} as unknown as PostInterface;
+export const postsData = [
+    {
+        title: "Test Post",
+        content: "This is a test post content",
+        type: PostTypes.OTHER,
+    },
+    {
+        title: "Test Post 2",
+        content: "This is a test post content 2",
+        type: PostTypes.DONATION,
+    },
+    {
+        title: "Test Post 3",
+        content: "This is a test post content 3",
+        type: PostTypes.DONATION,
+    }
+] as PostInterface[];
 
 export const commentsData = [
     {
@@ -26,12 +40,20 @@ export const commentsData = [
     {
         content: "Test Comment 2",
     }
-] as unknown as CommentInterface[];
+] as CommentInterface[];
 
 export const registerTestUser = async (app: Express) => {
-    // Ensure clean state handled by tests usually, but here we can create the user
-    await User.deleteMany({ username: userData.username });
-    const user = await User.create(userData);
-    userData._id = user._id;
-    // Since there is no auth/token, we just stick to ID
+    await User.deleteMany({ email: userData.email });
+
+    const response = await request(app).post("/auth/register").send(
+        omit(userData, ["accessToken", "refreshToken", "_id"])
+    );
+
+    if (response.body.accessToken) {
+        userData.accessToken = response.body.accessToken;
+        userData.refreshToken = response.body.refreshToken;
+
+        const user = await User.findOne({ email: userData.email });
+        user && (userData._id = user._id);
+    }
 };
