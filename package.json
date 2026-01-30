@@ -7,7 +7,12 @@
     "start": "tsc && node --env-file=.env ./dist/index.js",
     "dev": "nodemon src/index.ts",
     "lint": "eslint . --ext .js,.ts",
-    "lint:fix": "eslint . --ext .js,.ts --fix"
+    "lint:fix": "eslint . --ext .js,.ts --fix",
+    "test": "tsc && jest --runInBand --detectOpenHandles --forceExit",
+    "testcomment": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/comment.test.ts",
+    "testpost": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/post.test.ts",
+    "testuser": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/user.test.ts",
+    "testauth": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/auth.test.ts"
   },
   "repository": {
     "type": "git",
@@ -20,12 +25,16 @@
     "http-status": "^2.1.0",
     "lodash": "^4.17.21",
     "mongodb": "^7.0.0",
-    "mongoose": "^9.0.1"
+    "mongoose": "^9.0.1",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.6"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.21",
     "@types/node": "^24.10.1",
+    "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^8.49.0",
     "@typescript-eslint/parser": "^8.49.0",
     "dotenv": "^17.2.3",

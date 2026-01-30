@@ -1,0 +1,42 @@
+import request from "supertest";
+import initApp from "../server";
+import { Express } from "express";
+import mongoose from "mongoose";
+import User from "../models/userModel";
+import { userData, registerTestUser } from "../utils/testUtils";
+
+let app: Express;
+
+beforeAll(async () => {
+    app = await initApp();
+    await User.deleteMany({});
+    await registerTestUser(app);
+});
+
+afterAll(async () => {
+    await mongoose.connection.close();
+});
+
+describe("User API", () => {
+    test("GET /users - Get all users", async () => {
+        const response = await request(app).get("/users");
+        expect(response.statusCode).toBe(200);
+        expect(Array.isArray(response.body)).toBeTruthy();
+        expect(response.body.length).toBeGreaterThan(0);
+        expect(response.body[0].username).toBe(userData.username);
+    });
+
+    test("GET /users/:id - Get user by ID", async () => {
+        const response = await request(app).get(`/users/${userData._id}`);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.username).toBe(userData.username);
+    });
+
+    test("PUT /users/:id - Update user", async () => {
+        const updatedData = { ...userData, petsCount: 5 };
+        // Remove _id from body to avoid immutable field error if applicable, though mongoose usually ignores
+        const response = await request(app).put(`/users/${userData._id}`).send(updatedData);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.petsCount).toBe(5);
+    });
+});
