@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 import { UserInterface } from "../types/userInterfaces";
 
 const userSchema = new mongoose.Schema<UserInterface>({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   username: {
     type: String,
     required: true,
@@ -19,6 +24,9 @@ const userSchema = new mongoose.Schema<UserInterface>({
   petsCount: {
     type: Number,
     default: 0,
+  },
+  refreshToken: {
+    type: String,
   },
 });
 
