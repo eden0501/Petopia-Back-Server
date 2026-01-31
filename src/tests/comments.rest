@@ -5,8 +5,9 @@ Accept: application/json
 
 ###
 # Get comments by post
-GET http://localhost:3000/comments?postId=69590fb0b0961d8c8a7931de
+GET http://localhost:3000/comments?postId=69590fb0b0961d8c8a7931d
 Accept: application/json
+Authorization: Bearer <TOKEN>
 
 
 ###
