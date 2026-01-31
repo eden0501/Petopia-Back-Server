@@ -7,7 +7,8 @@ Accept: application/json
 # Get comments by post
 GET http://localhost:3000/comments?postId=69590fb0b0961d8c8a7931d
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTdhM2MwNjM0YmM0ZDMyNTM0ZTJhNDMiLCJpYXQiOjE3Njk2MTg0MzgsImV4cCI6MTc2OTYyMjAzOH0.ESHYj-BSLNdfWpZbLIZaVZyS56rIOnekMXuWSZDGoeM
+Authorization: Bearer <TOKEN>
+
 
 ###
 # Add a new comment

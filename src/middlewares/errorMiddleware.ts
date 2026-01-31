@@ -39,7 +39,7 @@ const errorMiddleware = (
       .status(status.INTERNAL_SERVER_ERROR)
       .json({ error: "Database related error" });
   }
-  console.error(error);
+
   return res
     .status(status.INTERNAL_SERVER_ERROR)
     .json({ error: "Something went wrong, please try again later" });
