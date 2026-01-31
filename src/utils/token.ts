@@ -1,7 +1,4 @@
 import jwt from "jsonwebtoken";
-import { Request } from "express";
-
-export type AuthRequest = Request & { user?: { id: string } };
 
 const SECRET_KEY = process.env.SECRET_KEY || "";
 const SECRET_REFRESH_KEY = process.env.SECRET_REFRESH_KEY || "";
