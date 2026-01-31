@@ -7,4 +7,4 @@ export interface PostInterface extends Document {
   type: PostTypes;
   authorId: Types.ObjectId;
   createdAt: Date;
-};
+}
