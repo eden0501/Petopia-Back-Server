@@ -129,7 +129,7 @@ const refreshToken = async (
       throw new CustomError(status.UNAUTHORIZED, "Invalid refresh token");
     }
 
-    if (!(user.refreshToken = refreshToken)) {
+    if (user.refreshToken !== refreshToken) {
       user.refreshToken = undefined;
       await user.save();
 
