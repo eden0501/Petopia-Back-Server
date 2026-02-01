@@ -9,10 +9,11 @@
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",
     "test": "tsc && jest --runInBand --detectOpenHandles --forceExit",
-    "testcomment": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/comment.test.ts",
-    "testpost": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/post.test.ts",
-    "testuser": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/user.test.ts",
-    "testauth": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/auth.test.ts"
+    "test:coverage": "tsc && jest --runInBand --detectOpenHandles --forceExit --coverage",
+    "test:comment": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/comment.test.ts",
+    "test:post": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/post.test.ts",
+    "test:user": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/user.test.ts",
+    "test:auth": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/auth.test.ts"
   },
   "repository": {
     "type": "git",

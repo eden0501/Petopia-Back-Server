@@ -1,0 +1,149 @@
+import request from "supertest";
+import initApp from "../server";
+import status from "http-status";
+import { Express } from "express";
+import mongoose from "mongoose";
+import User from "../models/userModel";
+import { userData } from "../utils/testUtils";
+
+let app: Express;
+
+beforeAll(async () => {
+  app = await initApp();
+  await User.deleteMany({});
+});
+
+afterAll(async () => {
+  await mongoose.connection.close();
+});
+
+describe("Auth API", () => {
+  describe("POST /auth/register", () => {
+    test("register as a new user", async () => {
+      const response = await request(app).post("/auth/register").send(userData);
+
+      expect(response.statusCode).toBe(status.CREATED);
+      expect(response.body).toHaveProperty("accessToken");
+      expect(response.body).toHaveProperty("refreshToken");
+    });
+
+    test("fail to register as an existing user", async () => {
+      const response = await request(app).post("/auth/register").send(userData);
+
+      expect(response.statusCode).toBe(status.CONFLICT);
+      expect(response.body).toHaveProperty("error");
+    });
+
+    test("fail to register with missing properties", async () => {
+      const response = await request(app)
+        .post("/auth/register")
+        .send({ username: "incompleteUser" });
+
+      expect(response.statusCode).toBe(status.BAD_REQUEST);
+      expect(response.body).toHaveProperty("error");
+    });
+  });
+
+  describe("POST /auth/login", () => {
+    test("login user", async () => {
+      const response = await request(app).post("/auth/login").send(userData);
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body).toHaveProperty("accessToken");
+      expect(response.body).toHaveProperty("refreshToken");
+
+      const { accessToken, refreshToken } = response.body;
+      userData.accessToken = accessToken;
+      userData.refreshToken = refreshToken;
+    });
+
+    test("fail to login with wrong password", async () => {
+      const response = await request(app)
+        .post("/auth/login")
+        .send({ email: userData.email, password: "wrong-password" });
+
+      expect(response.statusCode).toBe(status.FORBIDDEN);
+      expect(response.body).toHaveProperty("error");
+    });
+
+    test("fail to login with non-existent user", async () => {
+      const response = await request(app).post("/auth/login").send({
+        email: "nonexistent@example.com",
+        password: "password123",
+      });
+
+      expect(response.statusCode).toBe(status.NOT_FOUND);
+      expect(response.body).toHaveProperty("error");
+    });
+
+    test("fail to login with missing properties", async () => {
+      const missingEmailRes = await request(app).post("/auth/login").send({
+        password: userData.password,
+      });
+
+      expect(missingEmailRes.statusCode).toBe(status.BAD_REQUEST);
+      expect(missingEmailRes.body).toHaveProperty("error");
+
+      const missingPasswordRes = await request(app).post("/auth/login").send({
+        email: userData.email,
+      });
+
+      expect(missingPasswordRes.statusCode).toBe(status.BAD_REQUEST);
+      expect(missingPasswordRes.body).toHaveProperty("error");
+    });
+  });
+
+  describe("POST /auth/refresh-token", () => {
+    test("refresh token", async () => {
+      const response = await request(app).post("/auth/refresh-token").send({
+        refreshToken: userData.refreshToken,
+      });
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body).toHaveProperty("accessToken");
+      expect(response.body).toHaveProperty("refreshToken");
+    });
+
+    test("fail to refresh with invalid token", async () => {
+      const response = await request(app).post("/auth/refresh-token").send({
+        refreshToken: "invalid-token",
+      });
+
+      expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
+      expect(response.body).toHaveProperty("error");
+    });
+
+    test("fail to refresh with missing token", async () => {
+      const response = await request(app).post("/auth/refresh-token").send({});
+
+      expect(response.statusCode).toBe(status.BAD_REQUEST);
+      expect(response.body).toHaveProperty("error");
+    });
+  });
+
+  describe("POST /auth/logout", () => {
+    test("fail to logout without refresh token", async () => {
+      const response = await request(app).post("/auth/logout").send({});
+
+      expect(response.statusCode).toBe(status.BAD_REQUEST);
+      expect(response.body).toHaveProperty("error");
+    });
+
+    test("fail to logout with invalid refresh token", async () => {
+      const response = await request(app)
+        .post("/auth/logout")
+        .send({ refreshToken: "invalid-refresh-token" });
+
+      expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
+      expect(response.body).toHaveProperty("error");
+    });
+
+    test("logout user successfully", async () => {
+      const response = await request(app)
+        .post("/auth/logout")
+        .send({ refreshToken: userData.refreshToken });
+
+      expect(response.statusCode).toBe(status.OK);
+    });
+  });
+});
