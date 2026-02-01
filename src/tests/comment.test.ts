@@ -142,4 +142,121 @@ describe("Comment API", () => {
 
     expect(response.statusCode).toBe(status.BAD_REQUEST);
   });
+
+  test("POST /comments - Fail to create comment with non-existent author", async () => {
+    const nonExistentAuthorId = new mongoose.Types.ObjectId();
+    const invalidComment = {
+      ...commentsData[0],
+      postId: postId,
+      authorId: nonExistentAuthorId,
+    };
+
+    const response = await request(app)
+      .post("/comments")
+      .set("Authorization", "Bearer " + userData.accessToken)
+      .send(invalidComment);
+
+    expect(response.statusCode).toBe(status.BAD_REQUEST);
+    expect(response.body).toHaveProperty("error");
+  });
+
+  test("POST /comments - fail to create comment without authentication", async () => {
+    const response = await request(app)
+      .post("/comments")
+      .send({
+        ...commentsData[0],
+        postId: postId,
+        authorId: userData._id,
+      });
+
+    expect(response.statusCode).toBe(status.UNAUTHORIZED);
+    expect(response.body).toHaveProperty("error");
+  });
+
+  test("POST /comments - fail to create comment with missing required fields", async () => {
+    const response = await request(app)
+      .post("/comments")
+      .set("Authorization", "Bearer " + userData.accessToken)
+      .send({
+        authorId: userData._id,
+      });
+
+    expect(response.statusCode).toBe(status.BAD_REQUEST);
+  });
+
+  test("GET /comments - fail to get comments without authentication", async () => {
+    const response = await request(app).get("/comments");
+
+    expect(response.statusCode).toBe(status.UNAUTHORIZED);
+    expect(response.body).toHaveProperty("error");
+  });
+
+  test("GET /comments/:id - fail to get comment without authentication", async () => {
+    const newComment = await Comment.create({
+      ...commentsData[0],
+      postId: postId,
+      authorId: userData._id,
+    });
+
+    const response = await request(app).get(`/comments/${newComment._id}`);
+
+    expect(response.statusCode).toBe(status.UNAUTHORIZED);
+    expect(response.body).toHaveProperty("error");
+  });
+
+  test("PUT /comments/:id - fail to update non-existent comment", async () => {
+    const nonExistentId = new mongoose.Types.ObjectId();
+    const response = await request(app)
+      .put(`/comments/${nonExistentId}`)
+      .set("Authorization", "Bearer " + userData.accessToken)
+      .send({
+        ...commentsData[0],
+        postId: postId,
+        authorId: userData._id,
+      });
+
+    expect(response.statusCode).toBe(status.NOT_FOUND);
+  });
+
+  test("PUT /comments/:id - fail to update comment without authentication", async () => {
+    const newComment = await Comment.create({
+      ...commentsData[0],
+      postId: postId,
+      authorId: userData._id,
+    });
+
+    const response = await request(app)
+      .put(`/comments/${newComment._id}`)
+      .send({
+        ...commentsData[0],
+        postId: postId,
+        authorId: userData._id,
+        content: "Updated",
+      });
+
+    expect(response.statusCode).toBe(status.UNAUTHORIZED);
+    expect(response.body).toHaveProperty("error");
+  });
+
+  test("DELETE /comments/:id - fail to delete non-existent comment", async () => {
+    const nonExistentId = new mongoose.Types.ObjectId();
+    const response = await request(app)
+      .delete(`/comments/${nonExistentId}`)
+      .set("Authorization", "Bearer " + userData.accessToken);
+
+    expect(response.statusCode).toBe(status.NOT_FOUND);
+  });
+
+  test("DELETE /comments/:id - fail to delete comment without authentication", async () => {
+    const newComment = await Comment.create({
+      ...commentsData[0],
+      postId: postId,
+      authorId: userData._id,
+    });
+
+    const response = await request(app).delete(`/comments/${newComment._id}`);
+
+    expect(response.statusCode).toBe(status.UNAUTHORIZED);
+    expect(response.body).toHaveProperty("error");
+  });
 });

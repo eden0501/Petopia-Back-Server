@@ -102,6 +102,9 @@ describe("Auth API", () => {
       expect(response.statusCode).toBe(status.OK);
       expect(response.body).toHaveProperty("accessToken");
       expect(response.body).toHaveProperty("refreshToken");
+
+      userData.accessToken = response.body.accessToken;
+      userData.refreshToken = response.body.refreshToken;
     });
 
     test("fail to refresh with invalid token", async () => {

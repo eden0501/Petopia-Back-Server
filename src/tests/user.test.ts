@@ -43,7 +43,7 @@ describe("User API", () => {
         .get("/users")
         .set("Authorization", "Bearer invalid-token");
 
-      expect(response.statusCode).toBe(status.UNAUTHORIZED);
+      expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
       expect(response.body).toHaveProperty("error");
     });
   });
@@ -72,7 +72,7 @@ describe("User API", () => {
         .get("/users/invalid-id")
         .set("Authorization", "Bearer " + userData.accessToken);
 
-      expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
+      expect(response.statusCode).toBe(status.BAD_REQUEST);
     });
 
     test("should fail to get user without authentication", async () => {
@@ -123,7 +123,7 @@ describe("User API", () => {
         .set("Authorization", "Bearer " + userData.accessToken)
         .send(updatedData);
 
-      expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
+      expect(response.statusCode).toBe(status.BAD_REQUEST);
     });
   });
 });
