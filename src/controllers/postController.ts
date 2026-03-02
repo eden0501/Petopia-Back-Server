@@ -14,15 +14,15 @@ class PostController extends BaseController<PostInterface> {
 
       const filter = query.type ? { type: query.type } : {};
 
-      const data = await Post.find(filter)
+      const posts = await Post.find(filter)
         .sort({ createdAt: -1, _id: -1 })
-        .skip((page - 1) * limit)
+        .skip(page * limit)
         .limit(limit)
         .populate(["author", "comments"])
         .lean();
 
       return res.status(status.OK).json({
-        data,
+        posts,
         page,
         limit,
       });
@@ -79,7 +79,7 @@ class PostController extends BaseController<PostInterface> {
       }
 
       if (post.likes.includes(userId)) {
-        post.likes = post.likes.filter((id) => id.equals(userId));
+        post.likes = post.likes.filter((id) => !id.equals(userId));
         await post.save();
       }
 
