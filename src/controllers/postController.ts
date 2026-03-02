@@ -47,7 +47,7 @@ class PostController extends BaseController<PostInterface> {
         throw new CustomError(status.NOT_FOUND, "Post not found");
       }
 
-      if (!post.likes.includes(userId)) {
+      if (!post.likes.some((id) => String(id) === String(userId))) {
         post.likes.push(userId);
         await post.save();
       }
@@ -78,7 +78,7 @@ class PostController extends BaseController<PostInterface> {
         throw new CustomError(status.NOT_FOUND, "Post not found");
       }
 
-      if (post.likes.includes(userId)) {
+      if (post.likes.some((id) => String(id) === String(userId))) {
         post.likes = post.likes.filter((id) => String(id) !== String(userId));
         await post.save();
       }
