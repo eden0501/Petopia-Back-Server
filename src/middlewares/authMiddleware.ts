@@ -1,7 +1,7 @@
 import status from "http-status";
-import { NextFunction, Response } from "express";
-
+import { Types } from "mongoose";
 import { decodeToken } from "../utils/token";
+import { NextFunction, Response } from "express";
 import { CustomError } from "../utils/errorUtils";
 import { AuthRequest } from "../types/authRequest";
 
@@ -15,7 +15,7 @@ const authMiddleware = (req: AuthRequest, _: Response, next: NextFunction) => {
 
     const { userId } = decodeToken(authHeader.split(" ")[1]);
 
-    req.user = { id: userId };
+    req.user = { id: userId as unknown as Types.ObjectId };
 
     next();
   } catch (error) {

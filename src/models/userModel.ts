@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema<UserInterface>({
     select: false,
     required: true,
   },
-  dateOfBirth: {
+  petOwnerSince: {
     type: Date,
     default: Date.now,
   },
@@ -25,7 +25,11 @@ const userSchema = new mongoose.Schema<UserInterface>({
     type: Number,
     default: 0,
   },
+  profilePicture: {
+    type: String,
+  },
   refreshToken: {
+    select: false,
     type: String,
   },
 });
