@@ -7,18 +7,28 @@ import { AuthRequest } from "../types/authRequest";
 import { PostInterface } from "../types/postInterfaces";
 
 class PostController extends BaseController<PostInterface> {
-  async getBatch({ query }: AuthRequest, res: Response, next: NextFunction) {
+  async getBatch(
+    { query: { page, limit, ...query } }: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
-      const page = parseInt(String(query.page ?? 1));
-      const limit = parseInt(String(query.limit ?? 10));
+      const parsePage = parseInt(String(page ?? 1));
+      const parseLimit = parseInt(String(limit ?? 10));
 
-      const filter = query.type ? { type: query.type } : {};
-
-      const posts = await Post.find(filter)
+      const posts = await Post.find(query || {})
         .sort({ createdAt: -1, _id: -1 })
-        .skip(page * limit)
-        .limit(limit)
-        .populate(["author", "comments"])
+        .skip(parsePage * parseLimit)
+        .limit(parseLimit)
+        .populate("author")
+        .populate({
+          path: "comments",
+          populate: {
+            path: "author",
+            model: "User",
+            select: "username profilePicture",
+          },
+        })
         .lean();
 
       return res.status(status.OK).json({
