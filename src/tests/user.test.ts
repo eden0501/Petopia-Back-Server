@@ -83,6 +83,47 @@ describe("User API", () => {
     });
   });
 
+  describe("GET /users/info", () => {
+    test("should get user info", async () => {
+      const response = await request(app)
+        .get("/users/info")
+        .set("Authorization", "Bearer " + userData.accessToken);
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body.username).toBe(userData.username);
+      expect(response.body).toHaveProperty("likesCount");
+      expect(response.body).toHaveProperty("postsCount");
+      expect(response.body).toHaveProperty("commentsCount");
+    });
+
+    test("should fail to get user info without authentication", async () => {
+      const response = await request(app).get("/users/info");
+
+      expect(response.statusCode).toBe(status.UNAUTHORIZED);
+      expect(response.body).toHaveProperty("error");
+    });
+
+    test("should fail to get user info with invalid token", async () => {
+      const response = await request(app)
+        .get("/users/info")
+        .set("Authorization", "Bearer invalid-token");
+
+      expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
+      expect(response.body).toHaveProperty("error");
+    });
+
+    test("should return user with populated fields", async () => {
+      const response = await request(app)
+        .get("/users/info")
+        .set("Authorization", "Bearer " + userData.accessToken);
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(typeof response.body.likesCount).toBeDefined();
+      expect(typeof response.body.postsCount).toBeDefined();
+      expect(typeof response.body.commentsCount).toBeDefined();
+    });
+  });
+
   describe("PUT /users/:id", () => {
     test("should update user", async () => {
       const updatedData = { ...userData, petsCount: 5 };

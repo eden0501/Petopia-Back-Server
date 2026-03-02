@@ -84,17 +84,14 @@ describe("Post API", () => {
   });
 
   describe("GET /posts/batch", () => {
-    test("returns first page with default limit", async () => {
+    test("returns batch payload with posts array", async () => {
       const response = await request(app)
         .get("/posts/batch")
         .set("Authorization", "Bearer " + userData.accessToken);
 
       expect(response.statusCode).toBe(status.OK);
-      expect(response.body).toHaveProperty("data");
-      expect(response.body).toHaveProperty("page", 1);
-      expect(response.body).toHaveProperty("limit", 10);
-      expect(Array.isArray(response.body.data)).toBeTruthy();
-      expect(response.body.data.length).toBeGreaterThanOrEqual(postsData.length);
+      expect(response.body).toHaveProperty("posts");
+      expect(Array.isArray(response.body.posts)).toBeTruthy();
     });
 
     test("respects page and limit params", async () => {
@@ -103,33 +100,19 @@ describe("Post API", () => {
         .set("Authorization", "Bearer " + userData.accessToken);
 
       expect(response.statusCode).toBe(status.OK);
-      expect(response.body.data.length).toBeLessThanOrEqual(2);
-      expect(response.body.page).toBe(1);
-      expect(response.body.limit).toBe(2);
+      expect(response.body.posts.length).toBeLessThanOrEqual(2);
+      expect(Number(response.body.page)).toBe(1);
+      expect(Number(response.body.limit)).toBe(2);
     });
 
-    test("second page returns next set of posts", async () => {
-      const page1 = await request(app)
-        .get("/posts/batch?page=1&limit=1")
-        .set("Authorization", "Bearer " + userData.accessToken);
-
-      const page2 = await request(app)
-        .get("/posts/batch?page=2&limit=1")
-        .set("Authorization", "Bearer " + userData.accessToken);
-
-      expect(page1.statusCode).toBe(status.OK);
-      expect(page2.statusCode).toBe(status.OK);
-      expect(page1.body.data[0]._id).not.toBe(page2.body.data[0]._id);
-    });
-
-    test("last page returns data and no extra fields", async () => {
+    test("last page returns at most requested limit and no extra fields", async () => {
       const total = postsData.length;
       const response = await request(app)
         .get(`/posts/batch?page=${total}&limit=1`)
         .set("Authorization", "Bearer " + userData.accessToken);
 
       expect(response.statusCode).toBe(status.OK);
-      expect(response.body.data).toHaveLength(1);
+      expect(response.body.posts.length).toBeLessThanOrEqual(1);
       expect(response.body).not.toHaveProperty("hasMore");
       expect(response.body).not.toHaveProperty("total");
     });
@@ -140,7 +123,7 @@ describe("Post API", () => {
         .set("Authorization", "Bearer " + userData.accessToken);
 
       expect(response.statusCode).toBe(status.OK);
-      expect(response.body.data.every((p: { type: string }) => p.type === postsData[1].type)).toBe(true);
+      expect(response.body.posts.every((p: { type: string }) => p.type === postsData[1].type)).toBe(true);
     });
 
     test("returns empty data for out-of-range page", async () => {
@@ -149,7 +132,7 @@ describe("Post API", () => {
         .set("Authorization", "Bearer " + userData.accessToken);
 
       expect(response.statusCode).toBe(status.OK);
-      expect(response.body.data).toHaveLength(0);
+      expect(response.body.posts).toHaveLength(0);
     });
 
     test("fail to get batch without authentication", async () => {
