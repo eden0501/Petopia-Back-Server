@@ -15,7 +15,13 @@ const authMiddleware = (req: AuthRequest, _: Response, next: NextFunction) => {
 
     const { userId } = decodeToken(authHeader.split(" ")[1]);
 
-    req.user = { id: userId as unknown as Types.ObjectId };
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new CustomError(status.UNAUTHORIZED, "Invalid token payload");
+    }
+
+    const objectId = new Types.ObjectId(userId);
+
+    req.user = { id: objectId };
 
     next();
   } catch (error) {

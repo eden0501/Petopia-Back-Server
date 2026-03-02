@@ -79,7 +79,7 @@ class PostController extends BaseController<PostInterface> {
       }
 
       if (post.likes.includes(userId)) {
-        post.likes = post.likes.filter((id) => String(id) !== String(userId));
+        post.likes = post.likes.filter((id) => id.equals(userId));
         await post.save();
       }
 
