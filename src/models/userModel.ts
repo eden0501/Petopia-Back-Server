@@ -15,7 +15,9 @@ const userSchema = new mongoose.Schema<UserInterface>({
   password: {
     type: String,
     select: false,
-    required: true,
+    required: function (this: UserInterface) {
+      return !this.googleId;
+    },
   },
   dateOfBirth: {
     type: Date,
@@ -27,6 +29,11 @@ const userSchema = new mongoose.Schema<UserInterface>({
   },
   refreshToken: {
     type: String,
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
   },
 });
 

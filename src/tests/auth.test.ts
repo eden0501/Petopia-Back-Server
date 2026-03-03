@@ -6,6 +6,27 @@ import mongoose from "mongoose";
 import User from "../models/userModel";
 import { userData } from "../utils/testUtils";
 
+jest.mock("google-auth-library", () => {
+  return {
+    OAuth2Client: jest.fn().mockImplementation(() => {
+      return {
+        verifyIdToken: jest.fn().mockImplementation(async ({ idToken }: { idToken: string }) => {
+          if (idToken === "valid-google-token") {
+            return {
+              getPayload: () => ({
+                email: "googleuser@example.com",
+                sub: "google123",
+                name: "Google User",
+              }),
+            };
+          }
+          throw new Error("Invalid token");
+        }),
+      };
+    }),
+  };
+});
+
 let app: Express;
 
 beforeAll(async () => {
@@ -147,6 +168,34 @@ describe("Auth API", () => {
         .send({ refreshToken: userData.refreshToken });
 
       expect(response.statusCode).toBe(status.OK);
+    });
+  });
+
+  describe("POST /auth/google", () => {
+    test("login with valid google token", async () => {
+      const response = await request(app).post("/auth/google").send({
+        credential: "valid-google-token",
+      });
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body).toHaveProperty("accessToken");
+      expect(response.body).toHaveProperty("refreshToken");
+    });
+
+    test("fail to login with invalid google token", async () => {
+      const response = await request(app).post("/auth/google").send({
+        credential: "invalid-token",
+      });
+
+      expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
+      expect(response.body).toHaveProperty("error");
+    });
+
+    test("fail to login with missing google token", async () => {
+      const response = await request(app).post("/auth/google").send({});
+
+      expect(response.statusCode).toBe(status.BAD_REQUEST);
+      expect(response.body).toHaveProperty("error");
     });
   });
 });
