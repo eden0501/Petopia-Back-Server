@@ -13,7 +13,7 @@ class PostController extends BaseController<PostInterface> {
     next: NextFunction,
   ) {
     try {
-      const parsePage = parseInt(String(page ?? 1));
+      const parsePage = parseInt(String(page ?? 0));
       const parseLimit = parseInt(String(limit ?? 10));
 
       const posts = await Post.find(query || {})
