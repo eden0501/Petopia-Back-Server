@@ -1,5 +1,6 @@
 import express from "express";
 import userController from "../controllers/userController";
+import authMiddleware from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -27,6 +28,33 @@ const router = express.Router();
  *         $ref: '#/components/responses/ServerError'
  */
 router.get("/", userController.get.bind(userController));
+
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get user info
+ *     description: Retrieve user's info
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: user info
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.get(
+  "/info",
+  authMiddleware,
+  userController.getUserInfo.bind(userController),
+);
 
 /**
  * @swagger

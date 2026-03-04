@@ -123,7 +123,7 @@ const refreshToken = async (
 
     const { userId } = decodeToken(refreshToken, true);
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select("+refreshToken");
 
     if (!user) {
       throw new CustomError(status.UNAUTHORIZED, "Invalid refresh token");

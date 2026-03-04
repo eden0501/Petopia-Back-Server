@@ -1,5 +1,5 @@
 import express from "express";
-
+import authMiddleware from "../middlewares/authMiddleware";
 import commentController from "../controllers/commentController";
 
 const router = express.Router();
@@ -92,7 +92,11 @@ router.get("/:id", commentController.getById.bind(commentController));
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post("/", commentController.create.bind(commentController));
+router.post(
+  "/",
+  authMiddleware,
+  commentController.create.bind(commentController),
+);
 
 /**
  * @swagger

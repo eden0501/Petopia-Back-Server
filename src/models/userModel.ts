@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema<UserInterface>({
     select: false,
     required: true,
   },
-  dateOfBirth: {
+  petOwnerSince: {
     type: Date,
     default: Date.now,
   },
@@ -25,9 +25,37 @@ const userSchema = new mongoose.Schema<UserInterface>({
     type: Number,
     default: 0,
   },
+  profilePicture: {
+    type: String,
+  },
   refreshToken: {
+    select: false,
     type: String,
   },
 });
+
+userSchema.virtual("postsCount", {
+  ref: "Post",
+  localField: "_id",
+  foreignField: "authorId",
+  count: true,
+});
+
+userSchema.virtual("commentsCount", {
+  ref: "Comment",
+  localField: "_id",
+  foreignField: "authorId",
+  count: true,
+});
+
+userSchema.virtual("likesCount", {
+  ref: "Post",
+  localField: "_id",
+  foreignField: "likes",
+  count: true,
+});
+
+userSchema.set("toJSON", { virtuals: true });
+userSchema.set("toObject", { virtuals: true });
 
 export default mongoose.model("User", userSchema);
