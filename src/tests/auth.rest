@@ -6,7 +6,7 @@ Content-Type: application/json
   "email": "user@gmail.com",
   "password": "password123",
   "username": "user-name",
-  "dateOfBirth": "2003-05-01",
+  "petOwnerSince": "2023-05-01",
   "petsCount": "2"
 }
 

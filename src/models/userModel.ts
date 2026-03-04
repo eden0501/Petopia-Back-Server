@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema<UserInterface>({
       return !this.googleId;
     },
   },
-  dateOfBirth: {
+  petOwnerSince: {
     type: Date,
     default: Date.now,
   },

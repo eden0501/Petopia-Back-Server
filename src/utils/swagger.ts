@@ -56,10 +56,10 @@ const options: swaggerJsdoc.Options = {
               description: "User password (hashed when stored)",
               example: "password123",
             },
-            dateOfBirth: {
+            petOwnerSince: {
               type: "string",
               format: "date-time",
-              description: "User date of birth",
+              description: "User pet owner since date",
             },
             petsCount: {
               type: "number",
@@ -170,7 +170,7 @@ const options: swaggerJsdoc.Options = {
               type: "string",
               example: "petlover123",
             },
-            dateOfBirth: {
+            petOwnerSince: {
               type: "string",
               format: "date-time",
             },

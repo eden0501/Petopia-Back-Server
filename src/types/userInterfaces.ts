@@ -4,7 +4,7 @@ export interface UserInterface extends Document {
   email: string;
   username: string;
   password?: string;
-  dateOfBirth: Date;
+  petOwnerSince: Date;
   petsCount: number;
   refreshToken?: string;
   googleId?: string;

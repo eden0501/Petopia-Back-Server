@@ -11,7 +11,7 @@ export const userData = {
   username: "testUser",
   email: "test@user.com",
   password: "password123",
-  dateOfBirth: new Date("1990-01-01"),
+  petOwnerSince: new Date("2021-01-01"),
   petsCount: 1,
 } as UserInterface & { accessToken?: string };
 

@@ -194,7 +194,7 @@ export const googleLogin = async (
         username: name || email.split("@")[0],
         googleId,
         petsCount: 0,
-        dateOfBirth: new Date(),
+        petOwnerSince: new Date(),
       });
     } else if (!user.googleId) {
       user.googleId = googleId;
