@@ -6,6 +6,7 @@ import userRoutes from "./routes/userRoutes";
 import authRoutes from "./routes/authRoutes";
 import postRoutes from "./routes/postRoutes";
 import commentRoutes from "./routes/commentRoutes";
+import chatRoutes from "./routes/chatRoutes";
 import { swaggerUi, specs } from "./utils/swagger";
 import authMiddleware from "./middlewares/authMiddleware";
 import errorMiddleware from "./middlewares/errorMiddleware";
@@ -42,6 +43,7 @@ const initApp = () =>
     app.use("/users", userRoutes);
     app.use("/posts", postRoutes);
     app.use("/comments", commentRoutes);
+    app.use("/chat", chatRoutes);
     app.use(errorMiddleware);
 
     const dbUrl = process.env.DATABASE_URL;
