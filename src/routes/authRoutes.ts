@@ -19,15 +19,23 @@ const router = express.Router();
  *             $ref: '#/components/schemas/LoginRequest'
  *     responses:
  *       200:
- *         description: User successfully authenticated
+ *         description: User successfully authenticated. Access and Refresh tokens are set in cookies.
+ *         headers:
+ *           Set-Cookie:
+ *             description: Set-Cookie header for accessToken and refreshToken
+ *             schema:
+ *               type: string
+ *               example: accessToken=abc; Path=/; HttpOnly
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/AuthResponse'
  *       400:
  *         $ref: '#/components/responses/ValidationError'
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
@@ -49,13 +57,17 @@ router.post("/login", authController.login);
  *             $ref: '#/components/schemas/RegisterRequest'
  *     responses:
  *       201:
- *         description: User successfully registered
+ *         description: User successfully registered. Access and Refresh tokens are set in cookies.
+ *         headers:
+ *           Set-Cookie:
+ *             description: Set-Cookie header for accessToken and refreshToken
+ *             schema:
+ *               type: string
+ *               example: accessToken=abc; Path=/; HttpOnly
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/AuthResponse'
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
  *       400:
  *         $ref: '#/components/responses/ValidationError'
  *       500:
@@ -85,7 +97,13 @@ router.post("/register", authController.register);
  *                 description: The Google JWT credential token
  *     responses:
  *       200:
- *         description: User successfully authenticated
+ *         description: User successfully authenticated. Access and Refresh tokens are set in cookies.
+ *         headers:
+ *           Set-Cookie:
+ *             description: Set-Cookie header for accessToken and refreshToken
+ *             schema:
+ *               type: string
+ *               example: accessToken=abc; Path=/; HttpOnly
  *         content:
  *           application/json:
  *             schema:
@@ -104,13 +122,8 @@ router.post("/google", authController.googleLogin);
  *     summary: User logout
  *     description: Invalidate refresh token
  *     tags: [Authentication]
- *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/RefreshTokenRequest'
+ *     security:
+ *       - refreshTokenAuth: []
  *     responses:
  *       200:
  *         description: User successfully logged out
@@ -128,24 +141,27 @@ router.post("/logout", authController.logout);
  * /auth/refresh-token:
  *   post:
  *     summary: Refresh access token
- *     description: Generate new access and refresh tokens using a valid refresh token
+ *     description: Generate new access and refresh tokens using a valid refresh token from cookie
  *     tags: [Authentication]
- *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/RefreshTokenRequest'
+ *     security:
+ *       - refreshTokenAuth: []
  *     responses:
  *       200:
- *         description: Tokens successfully refreshed
+ *         description: Tokens successfully refreshed. Access and Refresh tokens are updated in cookies.
+ *         headers:
+ *           Set-Cookie:
+ *             description: Set-Cookie header for accessToken and refreshToken
+ *             schema:
+ *               type: string
+ *               example: accessToken=abc; Path=/; HttpOnly
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/AuthResponse'
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
  *       400:
  *         $ref: '#/components/responses/ValidationError'
  *       500:

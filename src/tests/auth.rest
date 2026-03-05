@@ -25,18 +25,7 @@ Content-Type: application/json
 ###
 # refresh user's session token
 POST  http://localhost:3000/auth/refresh-token
-Content-Type: application/json
-
-{
-  "refreshToken": ""
-}
-
 
 ###
 # logout user
 POST  http://localhost:3000/auth/logout
-Content-Type: application/json
-
-{
-  "refreshToken": ""
-}

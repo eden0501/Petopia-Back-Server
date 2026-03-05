@@ -47,7 +47,7 @@ export const register = async (
 
     res.cookie("accessToken", tokens.accessToken, getAuthCookiesOptions(tokens.accessToken))
     res.cookie("refreshToken", tokens.refreshToken, getAuthCookiesOptions(tokens.refreshToken));
-    res.status(status.CREATED).json(tokens);
+    res.status(status.CREATED).json({ message: "User successfully registered" });
   } catch (error) {
     next(error);
   }
@@ -84,7 +84,7 @@ export const login = async (
 
     res.cookie("accessToken", tokens.accessToken, getAuthCookiesOptions(tokens.accessToken))
     res.cookie("refreshToken", tokens.refreshToken, getAuthCookiesOptions(tokens.refreshToken));
-    res.status(status.OK).json(tokens);
+    res.status(status.OK).json({ message: "User successfully logged in" });
   } catch (error) {
     next(error);
   }
@@ -96,7 +96,7 @@ export const logout = async (
   next: NextFunction,
 ) => {
   try {
-    const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
       throw new CustomError(status.BAD_REQUEST, "Refresh token is required");
@@ -129,7 +129,7 @@ const refreshToken = async (
   next: NextFunction,
 ) => {
   try {
-    const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
       throw new CustomError(status.BAD_REQUEST, "Refresh token is required");
@@ -137,7 +137,7 @@ const refreshToken = async (
 
     const { userId } = decodeToken(refreshToken, true);
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select("+refreshToken");
 
     if (!user) {
       throw new CustomError(status.UNAUTHORIZED, "Invalid refresh token");
@@ -157,7 +157,7 @@ const refreshToken = async (
 
     res.cookie("accessToken", tokens.accessToken, getAuthCookiesOptions(tokens.accessToken))
     res.cookie("refreshToken", tokens.refreshToken, getAuthCookiesOptions(tokens.refreshToken));
-    res.status(status.OK).json(tokens);
+    res.status(status.OK).json({ message: "Tokens successfully refreshed" });
   } catch (error) {
     next(error);
   }
@@ -208,7 +208,7 @@ export const googleLogin = async (
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
     res.cookie("accessToken", tokens.accessToken, getAuthCookiesOptions(tokens.accessToken))
     res.cookie("refreshToken", tokens.refreshToken, getAuthCookiesOptions(tokens.refreshToken));
-    res.status(status.OK).json(tokens);
+    res.status(status.OK).json({ message: "Google login successful" });
   } catch (error) {
     next(error);
   }

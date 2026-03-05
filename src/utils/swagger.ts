@@ -22,11 +22,17 @@ const options: swaggerJsdoc.Options = {
     ],
     components: {
       securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
-          description: "JWT authorization header using the Bearer scheme",
+        cookieAuth: {
+          type: "apiKey",
+          in: "cookie",
+          name: "accessToken",
+          description: "Cookie-based authentication using accessToken",
+        },
+        refreshTokenAuth: {
+          type: "apiKey",
+          in: "cookie",
+          name: "refreshToken",
+          description: "Cookie-based authentication using refreshToken",
         },
       },
       schemas: {
@@ -183,26 +189,10 @@ const options: swaggerJsdoc.Options = {
         AuthResponse: {
           type: "object",
           properties: {
-            accessToken: {
+            message: {
               type: "string",
-              description: "JWT access token",
-              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-            },
-            refreshToken: {
-              type: "string",
-              description: "JWT refresh token",
-              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-            },
-          },
-        },
-        RefreshTokenRequest: {
-          type: "object",
-          required: ["refreshToken"],
-          properties: {
-            refreshToken: {
-              type: "string",
-              description: "Valid refresh token",
-              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+              description: "Success message",
+              example: "User successfully logged in",
             },
           },
         },
@@ -236,7 +226,20 @@ const options: swaggerJsdoc.Options = {
                 $ref: "#/components/schemas/Error",
               },
               example: {
-                error: "missing or invalid token",
+                error: "Missing or invalid token",
+              },
+            },
+          },
+        },
+        ForbiddenError: {
+          description: "Access to the resource is forbidden",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/Error",
+              },
+              example: {
+                error: "Access forbidden",
               },
             },
           },
@@ -307,7 +310,7 @@ const options: swaggerJsdoc.Options = {
     },
     security: [
       {
-        bearerAuth: [],
+        cookieAuth: [],
       },
     ],
   },

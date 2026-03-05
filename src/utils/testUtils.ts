@@ -11,7 +11,7 @@ export const userData = {
   username: "testUser",
   email: "test@user.com",
   password: "password123",
-  petOwnerSince: new Date("2021-01-01"),
+  petOwnerSince: new Date("1990-01-01"),
   petsCount: 1,
 } as UserInterface & { accessToken?: string };
 
@@ -49,9 +49,17 @@ export const registerTestUser = async (app: Express) => {
     .post("/auth/register")
     .send(omit(userData, ["accessToken", "refreshToken", "_id"]));
 
-  if (response.body.accessToken) {
-    userData.accessToken = response.body.accessToken;
-    userData.refreshToken = response.body.refreshToken;
+  const cookies = response.header["set-cookie"] as unknown as string[] | undefined;
+  if (cookies) {
+    const accessTokenCookie = cookies.find((c: string) => c.startsWith("accessToken="));
+    const refreshTokenCookie = cookies.find((c: string) => c.startsWith("refreshToken="));
+
+    if (accessTokenCookie) {
+      userData.accessToken = accessTokenCookie.split(";")[0].split("=")[1];
+    }
+    if (refreshTokenCookie) {
+      userData.refreshToken = refreshTokenCookie.split(";")[0].split("=")[1];
+    }
 
     const user = await User.findOne({ email: userData.email });
 

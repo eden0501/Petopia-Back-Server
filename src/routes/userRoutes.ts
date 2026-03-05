@@ -11,7 +11,7 @@ const router = express.Router();
  *     description: Retrieve a list of all users
  *     tags: [Users]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: A list of users
@@ -30,6 +30,32 @@ router.get("/", userController.get.bind(userController));
 
 /**
  * @swagger
+ * /users:
+ *   get:
+ *     summary: Get user info
+ *     description: Retrieve user's info
+ *     tags: [Users]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: user info
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.get(
+    "/info",
+    userController.getUserInfo.bind(userController),
+);
+
+/**
+ * @swagger
  * /users/{id}:
  *   get:
  *     summary: Get a user by ID
@@ -43,7 +69,7 @@ router.get("/", userController.get.bind(userController));
  *         required: true
  *         description: The user ID
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: The user description
@@ -77,7 +103,7 @@ router.get("/:id", userController.getById.bind(userController));
  *         required: true
  *         description: The user ID
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:

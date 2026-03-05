@@ -1,5 +1,4 @@
 import express from "express";
-
 import postController from "../controllers/postController";
 
 const router = express.Router();
@@ -12,7 +11,7 @@ const router = express.Router();
  *     description: Retrieve a list of all posts
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: A list of posts
@@ -31,6 +30,63 @@ router.get("/", postController.get.bind(postController));
 
 /**
  * @swagger
+ * /posts/batch:
+ *   get:
+ *     summary: Get posts in batches (paginated)
+ *     description: Retrieve a paginated list of posts using page and limit query parameters
+ *     tags: [Posts]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number (1-based)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of posts per page
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: Optional post type filter
+ *     responses:
+ *       200:
+ *         description: A paginated list of posts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Post'
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 hasMore:
+ *                   type: boolean
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.get(
+  "/batch",
+  postController.getBatch.bind(postController),
+);
+
+/**
+ * @swagger
  * /posts/{id}:
  *   get:
  *     summary: Get a post by ID
@@ -44,7 +100,7 @@ router.get("/", postController.get.bind(postController));
  *         required: true
  *         description: The post ID
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: The post content and data
@@ -71,7 +127,7 @@ router.get("/:id", postController.getById.bind(postController));
  *     description: Create a new post entry
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -109,7 +165,7 @@ router.post("/", postController.create.bind(postController));
  *         required: true
  *         description: The post ID
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -133,5 +189,75 @@ router.post("/", postController.create.bind(postController));
  *         $ref: '#/components/responses/ServerError'
  */
 router.put("/:id", postController.replace.bind(postController));
+
+/**
+ * @swagger
+ * /posts/like/{id}:
+ *   post:
+ *     summary: Like a post
+ *     description: Like a post by the authenticated user. User ID is extracted from the accessToken cookie.
+ *     tags: [Posts]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The post ID
+ *     responses:
+ *       200:
+ *         description: Post liked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.post(
+  "/like/:id",
+  postController.like.bind(postController),
+);
+
+/**
+ * @swagger
+ * /posts/unlike/{id}:
+ *   post:
+ *     summary: Unlike a post
+ *     description: Unlike a post by the authenticated user. User ID is extracted from the accessToken cookie.
+ *     tags: [Posts]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The post ID
+ *     responses:
+ *       200:
+ *         description: Post unliked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Post'
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ */
+router.post(
+  "/unlike/:id",
+  postController.unlike.bind(postController),
+);
 
 export default router;

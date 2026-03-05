@@ -44,8 +44,12 @@ describe("Auth API", () => {
       const response = await request(app).post("/auth/register").send(userData);
 
       expect(response.statusCode).toBe(status.CREATED);
-      expect(response.body).toHaveProperty("accessToken");
-      expect(response.body).toHaveProperty("refreshToken");
+      expect(response.header["set-cookie"]).toBeDefined();
+
+      const cookies = response.header["set-cookie"] as unknown as string[] | undefined;
+      if (!cookies) throw new Error("Cookies not set");
+      expect(cookies.some((c: string) => c.startsWith("accessToken="))).toBe(true);
+      expect(cookies.some((c: string) => c.startsWith("refreshToken="))).toBe(true);
     });
 
     test("fail to register as an existing user", async () => {
@@ -70,12 +74,18 @@ describe("Auth API", () => {
       const response = await request(app).post("/auth/login").send(userData);
 
       expect(response.statusCode).toBe(status.OK);
-      expect(response.body).toHaveProperty("accessToken");
-      expect(response.body).toHaveProperty("refreshToken");
+      expect(response.header["set-cookie"]).toBeDefined();
 
-      const { accessToken, refreshToken } = response.body;
-      userData.accessToken = accessToken;
-      userData.refreshToken = refreshToken;
+      const cookies = response.header["set-cookie"] as unknown as string[] | undefined;
+      if (!cookies) throw new Error("Cookies not set");
+      const accessTokenCookie = cookies.find((c: string) => c.startsWith("accessToken="));
+      const refreshTokenCookie = cookies.find((c: string) => c.startsWith("refreshToken="));
+
+      expect(accessTokenCookie).toBeDefined();
+      expect(refreshTokenCookie).toBeDefined();
+
+      userData.accessToken = accessTokenCookie!.split(";")[0].split("=")[1];
+      userData.refreshToken = refreshTokenCookie!.split(";")[0].split("=")[1];
     });
 
     test("fail to login with wrong password", async () => {
@@ -116,22 +126,26 @@ describe("Auth API", () => {
 
   describe("POST /auth/refresh-token", () => {
     test("refresh token", async () => {
-      const response = await request(app).post("/auth/refresh-token").send({
-        refreshToken: userData.refreshToken,
-      });
+      const response = await request(app)
+        .post("/auth/refresh-token")
+        .set("Cookie", [`refreshToken=${userData.refreshToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
-      expect(response.body).toHaveProperty("accessToken");
-      expect(response.body).toHaveProperty("refreshToken");
+      expect(response.header["set-cookie"]).toBeDefined();
 
-      userData.accessToken = response.body.accessToken;
-      userData.refreshToken = response.body.refreshToken;
+      const cookies = response.header["set-cookie"] as unknown as string[] | undefined;
+      if (!cookies) throw new Error("Cookies not set");
+      const accessTokenCookie = cookies.find((c: string) => c.startsWith("accessToken="));
+      const refreshTokenCookie = cookies.find((c: string) => c.startsWith("refreshToken="));
+
+      userData.accessToken = accessTokenCookie!.split(";")[0].split("=")[1];
+      userData.refreshToken = refreshTokenCookie!.split(";")[0].split("=")[1];
     });
 
     test("fail to refresh with invalid token", async () => {
-      const response = await request(app).post("/auth/refresh-token").send({
-        refreshToken: "invalid-token",
-      });
+      const response = await request(app)
+        .post("/auth/refresh-token")
+        .set("Cookie", ["refreshToken=invalid-token"]);
 
       expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
       expect(response.body).toHaveProperty("error");
@@ -156,7 +170,7 @@ describe("Auth API", () => {
     test("fail to logout with invalid refresh token", async () => {
       const response = await request(app)
         .post("/auth/logout")
-        .send({ refreshToken: "invalid-refresh-token" });
+        .set("Cookie", ["refreshToken=invalid-refresh-token"]);
 
       expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
       expect(response.body).toHaveProperty("error");
@@ -165,7 +179,7 @@ describe("Auth API", () => {
     test("logout user successfully", async () => {
       const response = await request(app)
         .post("/auth/logout")
-        .send({ refreshToken: userData.refreshToken });
+        .set("Cookie", [`refreshToken=${userData.refreshToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
     });
@@ -178,8 +192,12 @@ describe("Auth API", () => {
       });
 
       expect(response.statusCode).toBe(status.OK);
-      expect(response.body).toHaveProperty("accessToken");
-      expect(response.body).toHaveProperty("refreshToken");
+      expect(response.header["set-cookie"]).toBeDefined();
+
+      const cookies = response.header["set-cookie"] as unknown as string[] | undefined;
+      if (!cookies) throw new Error("Cookies not set");
+      expect(cookies.some((c: string) => c.startsWith("accessToken="))).toBe(true);
+      expect(cookies.some((c: string) => c.startsWith("refreshToken="))).toBe(true);
     });
 
     test("fail to login with invalid google token", async () => {

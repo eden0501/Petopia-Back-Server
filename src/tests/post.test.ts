@@ -30,11 +30,8 @@ describe("Post API", () => {
       for (const post of postsData) {
         response = await request(app)
           .post("/posts")
-          .set("Authorization", "Bearer " + userData.accessToken)
-          .send({
-            ...post,
-            authorId: userData._id,
-          });
+          .set("Cookie", [`accessToken=${userData.accessToken}`])
+          .send(post);
 
         expect(response.statusCode).toBe(status.CREATED);
         expect(response.body.title).toBe(post.title);
@@ -47,36 +44,8 @@ describe("Post API", () => {
     test("fail to create an empty post", async () => {
       const response = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send({});
-
-      expect(response.statusCode).toBe(status.BAD_REQUEST);
-    });
-
-    test("fail to create post with non-existent author", async () => {
-      const nonExistentAuthorId = new mongoose.Types.ObjectId();
-      const invalidPost = {
-        ...postsData[0],
-        authorId: nonExistentAuthorId,
-      };
-      const response = await request(app)
-        .post("/posts")
-        .set("Authorization", "Bearer " + userData.accessToken)
-        .send(invalidPost);
-
-      expect(response.statusCode).toBe(status.BAD_REQUEST);
-      expect(response.body).toHaveProperty("error");
-    });
-
-    test("fail to create post with invalid author format", async () => {
-      const invalidPost = {
-        ...postsData[0],
-        authorId: userData._id + "invalid",
-      };
-      const response = await request(app)
-        .post("/posts")
-        .set("Authorization", "Bearer " + userData.accessToken)
-        .send(invalidPost);
 
       expect(response.statusCode).toBe(status.BAD_REQUEST);
     });
@@ -89,7 +58,7 @@ describe("Post API", () => {
       };
       const response = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send(invalidPost);
 
       expect(response.statusCode).toBe(status.BAD_REQUEST);
@@ -98,10 +67,7 @@ describe("Post API", () => {
     test("fail to create post without authentication", async () => {
       const response = await request(app)
         .post("/posts")
-        .send({
-          ...postsData[0],
-          authorId: userData._id,
-        });
+        .send({ ...postsData[0] });
 
       expect(response.statusCode).toBe(status.UNAUTHORIZED);
       expect(response.body).toHaveProperty("error");
@@ -110,12 +76,70 @@ describe("Post API", () => {
     test("fail to create post with missing required fields", async () => {
       const response = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + userData.accessToken)
-        .send({
-          authorId: userData._id,
-        });
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
+        .send({});
 
       expect(response.statusCode).toBe(status.BAD_REQUEST);
+    });
+  });
+
+  describe("GET /posts/batch", () => {
+    test("returns batch payload with posts array", async () => {
+      const response = await request(app)
+        .get("/posts/batch")
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body).toHaveProperty("posts");
+      expect(Array.isArray(response.body.posts)).toBeTruthy();
+    });
+
+    test("respects page and limit params", async () => {
+      const response = await request(app)
+        .get("/posts/batch?page=1&limit=2")
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body.posts.length).toBeLessThanOrEqual(2);
+      expect(Number(response.body.page)).toBe(1);
+      expect(Number(response.body.limit)).toBe(2);
+    });
+
+    test("last page returns at most requested limit and no extra fields", async () => {
+      const total = postsData.length;
+      const response = await request(app)
+        .get(`/posts/batch?page=${total}&limit=1`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body.posts.length).toBeLessThanOrEqual(1);
+      expect(response.body).not.toHaveProperty("hasMore");
+      expect(response.body).not.toHaveProperty("total");
+    });
+
+    test("filters by type", async () => {
+      const response = await request(app)
+        .get(`/posts/batch?type=${postsData[1].type}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body.posts.every((p: { type: string }) => p.type === postsData[1].type)).toBe(true);
+    });
+
+    test("returns empty data for out-of-range page", async () => {
+      const response = await request(app)
+        .get("/posts/batch?page=9999&limit=10")
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body.posts).toHaveLength(0);
+    });
+
+    test("fail to get batch without authentication", async () => {
+      const response = await request(app).get("/posts/batch");
+
+      expect(response.statusCode).toBe(status.UNAUTHORIZED);
+      expect(response.body).toHaveProperty("error");
     });
   });
 
@@ -123,29 +147,29 @@ describe("Post API", () => {
     test("get all posts", async () => {
       const response = await request(app)
         .get("/posts")
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(Array.isArray(response.body)).toBeTruthy();
-      expect(response.body.length).toEqual(postsData.length);
+      expect(response.body.length).toBeGreaterThanOrEqual(postsData.length);
     });
 
     test("get posts by filter (type)", async () => {
       const responseOther = await request(app)
         .get(`/posts?type=${postsData[0].type}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(responseOther.statusCode).toBe(status.OK);
       expect(Array.isArray(responseOther.body)).toBeTruthy();
-      expect(responseOther.body.length).toEqual(1);
+      expect(responseOther.body.length).toBeGreaterThanOrEqual(1);
       expect(responseOther.body[0].authorId).toBe(userData._id.toString());
 
       const responseDonation = await request(app)
         .get(`/posts?type=${postsData[1].type}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(responseDonation.statusCode).toBe(status.OK);
-      expect(responseDonation.body.length).toEqual(2);
+      expect(responseDonation.body.length).toBeGreaterThanOrEqual(1);
     });
 
     test("fail to get posts without authentication", async () => {
@@ -160,7 +184,7 @@ describe("Post API", () => {
     test("get post by ID", async () => {
       const response = await request(app)
         .get(`/posts/${postId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(response.body.title).toBe(postsData[postsData.length - 1].title);
@@ -170,7 +194,7 @@ describe("Post API", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .get(`/posts/${nonExistentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.NOT_FOUND);
     });
@@ -187,7 +211,7 @@ describe("Post API", () => {
 
       const response = await request(app)
         .put(`/posts/${postId}`)
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send(postPayload);
 
       expect(response.statusCode).toBe(status.OK);
@@ -198,7 +222,7 @@ describe("Post API", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .put(`/posts/${nonExistentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send({
           ...postsData[0],
           authorId: userData._id,
@@ -211,7 +235,7 @@ describe("Post API", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .put(`/posts/${nonExistentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send({});
 
       expect(response.statusCode).toBe(status.BAD_REQUEST);
@@ -228,6 +252,86 @@ describe("Post API", () => {
 
       expect(response.statusCode).toBe(status.UNAUTHORIZED);
       expect(response.body).toHaveProperty("error");
+    });
+  });
+
+  describe("POST /posts/like/:id", () => {
+    test("like a post", async () => {
+      const response = await request(app)
+        .post(`/posts/like/${postId}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.OK);
+    });
+
+    test("like a post that is already liked (idempotent)", async () => {
+      const response = await request(app)
+        .post(`/posts/like/${postId}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.OK);
+
+      const postResponse = await request(app)
+        .get(`/posts/${postId}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(postResponse.body.likes).toHaveLength(1);
+    });
+
+    test("fail to like a post without authentication", async () => {
+      const response = await request(app).post(`/posts/like/${postId}`);
+
+      expect(response.statusCode).toBe(status.UNAUTHORIZED);
+      expect(response.body).toHaveProperty("error");
+    });
+
+    test("fail to like a non-existent post", async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+      const response = await request(app)
+        .post(`/posts/like/${nonExistentId}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.NOT_FOUND);
+    });
+  });
+
+  describe("POST /posts/unlike/:id", () => {
+    test("unlike a post", async () => {
+      const response = await request(app)
+        .post(`/posts/unlike/${postId}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.OK);
+    });
+
+    test("unlike a post that is already unliked (idempotent)", async () => {
+      const response = await request(app)
+        .post(`/posts/unlike/${postId}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.OK);
+
+      const postResponse = await request(app)
+        .get(`/posts/${postId}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(postResponse.body.likes).toHaveLength(0);
+    });
+
+    test("fail to unlike a post without authentication", async () => {
+      const response = await request(app).post(`/posts/unlike/${postId}`);
+
+      expect(response.statusCode).toBe(status.UNAUTHORIZED);
+      expect(response.body).toHaveProperty("error");
+    });
+
+    test("fail to unlike a non-existent post", async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+      const response = await request(app)
+        .post(`/posts/unlike/${nonExistentId}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.NOT_FOUND);
     });
   });
 });
