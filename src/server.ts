@@ -21,7 +21,7 @@ const initApp = () =>
     app.use(express.json());
     app.use(cookieParser());
     app.use(cors({
-      origin: JSON.parse(process.env.CORS_ALLOWED_ORIGINS || '[]'),
+      origin: JSON.parse(process.env.CORS_ALLOWED_ORIGINS || "[]"),
       credentials: true
     }));
 

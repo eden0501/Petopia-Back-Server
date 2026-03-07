@@ -21,11 +21,11 @@ const userSchema = new mongoose.Schema<UserInterface>({
   },
   petOwnerSince: {
     type: Date,
-    default: Date.now,
+    required: false
   },
   petsCount: {
     type: Number,
-    default: 0,
+    required: false
   },
   profilePicture: {
     type: String,

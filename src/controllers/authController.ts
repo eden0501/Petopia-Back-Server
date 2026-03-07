@@ -186,7 +186,7 @@ export const googleLogin = async (
       if (!payload || !payload.email) {
         throw "Invalid Google token";
       }
-    } catch (error) {
+    } catch (_error) {
       throw new CustomError(status.BAD_REQUEST, "Invalid Google token");
     }
 
@@ -198,8 +198,6 @@ export const googleLogin = async (
         email,
         username: name || email.split("@")[0],
         googleId,
-        petsCount: 0,
-        petOwnerSince: new Date(),
       });
     } else if (!user.googleId) {
       user.googleId = googleId;
@@ -210,7 +208,7 @@ export const googleLogin = async (
 
     await user.save();
 
-    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
     res.cookie("accessToken", tokens.accessToken, getAuthCookiesOptions(tokens.accessToken))
     res.cookie("refreshToken", tokens.refreshToken, getAuthCookiesOptions(tokens.refreshToken));
     res.status(status.OK).json({ message: "Google login successful" });

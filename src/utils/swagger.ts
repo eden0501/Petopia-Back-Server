@@ -38,7 +38,7 @@ const options: swaggerJsdoc.Options = {
       schemas: {
         User: {
           type: "object",
-          required: ["email", "username", "password"],
+          required: ["email", "username"],
           properties: {
             _id: {
               type: "string",
@@ -70,7 +70,6 @@ const options: swaggerJsdoc.Options = {
             petsCount: {
               type: "number",
               description: "Number of pets owned",
-              default: 0,
               example: 2,
             },
           },
