@@ -45,7 +45,7 @@ describe("Comment API", () => {
       for (const comment of commentsData) {
         response = await request(app)
           .post("/comments")
-          .set("Authorization", "Bearer " + userData.accessToken)
+          .set("Cookie", [`accessToken=${userData.accessToken}`])
           .send({
             ...comment,
             postId: postId,
@@ -67,7 +67,7 @@ describe("Comment API", () => {
 
       const response = await request(app)
         .post("/comments")
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send(invalidComment);
 
       expect([status.BAD_REQUEST, status.UNAUTHORIZED]).toContain(
@@ -82,7 +82,7 @@ describe("Comment API", () => {
     test("fail to create comment with missing required fields", async () => {
       const response = await request(app)
         .post("/comments")
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send({ postId });
 
       expect(response.statusCode).toBe(status.BAD_REQUEST);
@@ -94,7 +94,7 @@ describe("Comment API", () => {
     test("get all comments", async () => {
       const response = await request(app)
         .get("/comments")
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(Array.isArray(response.body)).toBeTruthy();
@@ -104,7 +104,7 @@ describe("Comment API", () => {
     test("get comments by filter (postId)", async () => {
       const response = await request(app)
         .get(`/comments?postId=${postId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(Array.isArray(response.body)).toBeTruthy();
@@ -117,7 +117,7 @@ describe("Comment API", () => {
     test("get comment by id", async () => {
       const response = await request(app)
         .get("/comments/" + commentId)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(response.body.content).toBe(
@@ -129,7 +129,7 @@ describe("Comment API", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .get("/comments/" + nonExistentId)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
       expect(response.statusCode).toBe(status.NOT_FOUND);
     });
 
@@ -154,7 +154,7 @@ describe("Comment API", () => {
       };
       const response = await request(app)
         .put(`/comments/${commentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send(commentPayload);
 
       expect([status.OK, status.BAD_REQUEST]).toContain(response.statusCode);
@@ -169,7 +169,7 @@ describe("Comment API", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .put(`/comments/${nonExistentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send({
           ...commentsData[0],
           postId: postId,
@@ -197,7 +197,7 @@ describe("Comment API", () => {
     test("delete own comment", async () => {
       const response = await request(app)
         .delete(`/comments/${commentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
 
@@ -218,12 +218,19 @@ describe("Comment API", () => {
       const registerResponse = await request(app)
         .post("/auth/register")
         .send(secondUser);
-      const secondUserToken = registerResponse.body.accessToken;
+      const cookies = registerResponse.header["set-cookie"] as unknown as string[] | undefined;
+      let secondUserToken = "";
+      if (cookies) {
+        const accessTokenCookie = cookies.find((c: string) => c.startsWith("accessToken="));
+        if (accessTokenCookie) {
+          secondUserToken = accessTokenCookie.split(";")[0].split("=")[1];
+        }
+      }
 
       // Second user creates a comment on first user's post
       const commentResponse = await request(app)
         .post("/comments")
-        .set("Authorization", "Bearer " + secondUserToken)
+        .set("Cookie", [`accessToken=${secondUserToken}`])
         .send({ content: "Comment by second user", postId });
 
       expect(commentResponse.statusCode).toBe(status.CREATED);
@@ -232,7 +239,7 @@ describe("Comment API", () => {
       // First user (post author) deletes second user's comment
       const deleteResponse = await request(app)
         .delete(`/comments/${secondUserCommentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(deleteResponse.statusCode).toBe(status.OK);
 
@@ -253,12 +260,19 @@ describe("Comment API", () => {
       const registerResponse = await request(app)
         .post("/auth/register")
         .send(thirdUser);
-      const thirdUserToken = registerResponse.body.accessToken;
+      const cookies = registerResponse.header["set-cookie"] as unknown as string[] | undefined;
+      let thirdUserToken = "";
+      if (cookies) {
+        const accessTokenCookie = cookies.find((c: string) => c.startsWith("accessToken="));
+        if (accessTokenCookie) {
+          thirdUserToken = accessTokenCookie.split(";")[0].split("=")[1];
+        }
+      }
 
       // First user creates a comment on their own post
       const commentResponse = await request(app)
         .post("/comments")
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send({ content: "Comment by first user", postId });
 
       expect(commentResponse.statusCode).toBe(status.CREATED);
@@ -267,7 +281,7 @@ describe("Comment API", () => {
       // Third user tries to delete first user's comment on first user's post
       const deleteResponse = await request(app)
         .delete(`/comments/${firstUserCommentId}`)
-        .set("Authorization", "Bearer " + thirdUserToken);
+        .set("Cookie", [`accessToken=${thirdUserToken}`]);
 
       expect(deleteResponse.statusCode).toBe(status.FORBIDDEN);
       expect(deleteResponse.body).toHaveProperty("error");
@@ -281,7 +295,7 @@ describe("Comment API", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .delete(`/comments/${nonExistentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.NOT_FOUND);
     });
@@ -289,7 +303,7 @@ describe("Comment API", () => {
     test("fail to delete comment without authentication", async () => {
       const createResponse = await request(app)
         .post("/comments")
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send({ ...commentsData[0], postId });
 
       const newCommentId = createResponse.body._id;

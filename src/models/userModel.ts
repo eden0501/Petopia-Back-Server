@@ -15,15 +15,17 @@ const userSchema = new mongoose.Schema<UserInterface>({
   password: {
     type: String,
     select: false,
-    required: true,
+    required: function (this: UserInterface) {
+      return !this.googleId;
+    },
   },
   petOwnerSince: {
     type: Date,
-    default: Date.now,
+    required: false
   },
   petsCount: {
     type: Number,
-    default: 0,
+    required: false
   },
   profilePicture: {
     type: String,
@@ -31,6 +33,11 @@ const userSchema = new mongoose.Schema<UserInterface>({
   refreshToken: {
     select: false,
     type: String,
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
   },
 });
 

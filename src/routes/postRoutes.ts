@@ -12,7 +12,7 @@ const router = express.Router();
  *     description: Retrieve a list of all posts
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: A list of posts
@@ -37,7 +37,7 @@ router.get("/", postController.get.bind(postController));
  *     description: Retrieve a paginated list of posts using page and limit query parameters
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -81,11 +81,7 @@ router.get("/", postController.get.bind(postController));
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.get(
-  "/batch",
-  authMiddleware,
-  postController.getBatch.bind(postController),
-);
+router.get("/batch", postController.getBatch.bind(postController));
 
 /**
  * @swagger
@@ -102,7 +98,7 @@ router.get(
  *         required: true
  *         description: The post ID
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: The post content and data
@@ -129,7 +125,7 @@ router.get("/:id", postController.getById.bind(postController));
  *     description: Create a new post entry
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -167,7 +163,7 @@ router.post("/", authMiddleware, postController.create.bind(postController));
  *         required: true
  *         description: The post ID
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -197,10 +193,10 @@ router.put("/:id", postController.replace.bind(postController));
  * /posts/like/{id}:
  *   post:
  *     summary: Like a post
- *     description: Like a post by the authenticated user. User ID is extracted from the Bearer token.
+ *     description: Like a post by the authenticated user. User ID is extracted from the accessToken cookie.
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -222,21 +218,17 @@ router.put("/:id", postController.replace.bind(postController));
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-router.post(
-  "/like/:id",
-  authMiddleware,
-  postController.like.bind(postController),
-);
+router.post("/like/:id", postController.like.bind(postController));
 
 /**
  * @swagger
  * /posts/unlike/{id}:
  *   post:
  *     summary: Unlike a post
- *     description: Unlike a post by the authenticated user. User ID is extracted from the Bearer token.
+ *     description: Unlike a post by the authenticated user. User ID is extracted from the accessToken cookie.
  *     tags: [Posts]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -260,7 +252,6 @@ router.post(
  */
 router.post(
   "/unlike/:id",
-  authMiddleware,
   postController.unlike.bind(postController),
 );
 

@@ -1,6 +1,7 @@
 import cors from "cors";
 import mongoose from "mongoose";
 import express, { Express } from "express";
+import cookieParser from "cookie-parser";
 
 import userRoutes from "./routes/userRoutes";
 import authRoutes from "./routes/authRoutes";
@@ -18,7 +19,11 @@ const initApp = () =>
 
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
-    app.use(cors());
+    app.use(cookieParser());
+    app.use(cors({
+      origin: JSON.parse(process.env.CORS_ALLOWED_ORIGINS || "[]"),
+      credentials: true
+    }));
 
     app.use(
       "/api-docs",

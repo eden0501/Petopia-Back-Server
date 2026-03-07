@@ -23,7 +23,7 @@ describe("User API", () => {
     test("should get all users", async () => {
       const response = await request(app)
         .get("/users")
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(Array.isArray(response.body)).toBeTruthy();
@@ -41,7 +41,7 @@ describe("User API", () => {
     test("should fail to get users with invalid token", async () => {
       const response = await request(app)
         .get("/users")
-        .set("Authorization", "Bearer invalid-token");
+        .set("Cookie", ["accessToken=invalid-token"]);
 
       expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
       expect(response.body).toHaveProperty("error");
@@ -52,7 +52,7 @@ describe("User API", () => {
     test("should get user by ID", async () => {
       const response = await request(app)
         .get(`/users/${userData._id}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(response.body.username).toBe(userData.username);
@@ -62,7 +62,7 @@ describe("User API", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .get(`/users/${nonExistentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.NOT_FOUND);
     });
@@ -70,7 +70,7 @@ describe("User API", () => {
     test("should fail to get user with invalid ID format", async () => {
       const response = await request(app)
         .get("/users/invalid-id")
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.BAD_REQUEST);
     });
@@ -87,7 +87,7 @@ describe("User API", () => {
     test("should get user info", async () => {
       const response = await request(app)
         .get("/users/info")
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(response.body.username).toBe(userData.username);
@@ -106,7 +106,7 @@ describe("User API", () => {
     test("should fail to get user info with invalid token", async () => {
       const response = await request(app)
         .get("/users/info")
-        .set("Authorization", "Bearer invalid-token");
+        .set("Cookie", ["accessToken=invalid-token"]);
 
       expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
       expect(response.body).toHaveProperty("error");
@@ -115,7 +115,7 @@ describe("User API", () => {
     test("should return user with populated fields", async () => {
       const response = await request(app)
         .get("/users/info")
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(typeof response.body.likesCount).toBeDefined();
@@ -128,7 +128,7 @@ describe("User API", () => {
     test("should update user", async () => {
       const response = await request(app)
         .put("/users")
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send({ petsCount: 5 });
 
       expect(response.statusCode).toBe(status.OK);

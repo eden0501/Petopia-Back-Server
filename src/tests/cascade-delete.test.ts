@@ -48,7 +48,13 @@ describe("Cascade Delete Tests", () => {
       email: testUser1.email,
       password: testUser1.password,
     });
-    testUser1.accessToken = response1.body.accessToken;
+    const cookies1 = response1.header["set-cookie"] as unknown as string[] | undefined;
+    if (cookies1) {
+      const accessTokenCookie = cookies1.find((c: string) => c.startsWith("accessToken="));
+      if (accessTokenCookie) {
+        testUser1.accessToken = accessTokenCookie.split(";")[0].split("=")[1];
+      }
+    }
     const user1 = await User.findOne({ email: testUser1.email });
     testUser1._id = user1?._id || null;
 
@@ -57,7 +63,13 @@ describe("Cascade Delete Tests", () => {
       email: testUser2.email,
       password: testUser2.password,
     });
-    testUser2.accessToken = response2.body.accessToken;
+    const cookies2 = response2.header["set-cookie"] as unknown as string[] | undefined;
+    if (cookies2) {
+      const accessTokenCookie = cookies2.find((c: string) => c.startsWith("accessToken="));
+      if (accessTokenCookie) {
+        testUser2.accessToken = accessTokenCookie.split(";")[0].split("=")[1];
+      }
+    }
     const user2 = await User.findOne({ email: testUser2.email });
     testUser2._id = user2?._id || null;
   });
@@ -67,7 +79,7 @@ describe("Cascade Delete Tests", () => {
       // Create a post
       const postResponse = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + testUser1.accessToken)
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`])
         .send({
           title: "Test Post for Cascade",
           content: "This post will be deleted",
@@ -79,12 +91,12 @@ describe("Cascade Delete Tests", () => {
       // Create comments on the post
       await request(app)
         .post("/comments")
-        .set("Authorization", "Bearer " + testUser1.accessToken)
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`])
         .send({ content: "Comment 1", postId });
 
       await request(app)
         .post("/comments")
-        .set("Authorization", "Bearer " + testUser2.accessToken)
+        .set("Cookie", [`accessToken=${testUser2.accessToken}`])
         .send({ content: "Comment 2", postId });
 
       // Verify comments exist
@@ -94,7 +106,7 @@ describe("Cascade Delete Tests", () => {
       // Delete the post
       const deleteResponse = await request(app)
         .delete(`/posts/${postId}`)
-        .set("Authorization", "Bearer " + testUser1.accessToken);
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`]);
 
       expect(deleteResponse.statusCode).toBe(status.OK);
 
@@ -111,7 +123,7 @@ describe("Cascade Delete Tests", () => {
       // Create a post by user1
       const postResponse = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + testUser1.accessToken)
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`])
         .send({
           title: "User1 Post",
           content: "This is user1's post",
@@ -123,7 +135,7 @@ describe("Cascade Delete Tests", () => {
       // Try to delete with user2
       const deleteResponse = await request(app)
         .delete(`/posts/${postId}`)
-        .set("Authorization", "Bearer " + testUser2.accessToken);
+        .set("Cookie", [`accessToken=${testUser2.accessToken}`]);
 
       expect(deleteResponse.statusCode).toBe(status.FORBIDDEN);
 
@@ -136,7 +148,7 @@ describe("Cascade Delete Tests", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .delete(`/posts/${nonExistentId}`)
-        .set("Authorization", "Bearer " + testUser1.accessToken);
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`]);
 
       expect(response.statusCode).toBe(status.NOT_FOUND);
     });
@@ -144,7 +156,7 @@ describe("Cascade Delete Tests", () => {
     test("should fail to delete post without authentication", async () => {
       const postResponse = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + testUser1.accessToken)
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`])
         .send({
           title: "Test Post",
           content: "Content",
@@ -164,7 +176,7 @@ describe("Cascade Delete Tests", () => {
       // Create posts by user1
       const post1Response = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + testUser1.accessToken)
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`])
         .send({
           title: "User1 Post 1",
           content: "Content 1",
@@ -173,7 +185,7 @@ describe("Cascade Delete Tests", () => {
 
       const post2Response = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + testUser1.accessToken)
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`])
         .send({
           title: "User1 Post 2",
           content: "Content 2",
@@ -186,19 +198,19 @@ describe("Cascade Delete Tests", () => {
       // Create comments by user1 on their own posts
       await request(app)
         .post("/comments")
-        .set("Authorization", "Bearer " + testUser1.accessToken)
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`])
         .send({ content: "User1 comment on post1", postId: post1Id });
 
       // Create comments by user2 on user1's posts
       await request(app)
         .post("/comments")
-        .set("Authorization", "Bearer " + testUser2.accessToken)
+        .set("Cookie", [`accessToken=${testUser2.accessToken}`])
         .send({ content: "User2 comment on user1 post", postId: post1Id });
 
       // Create a post by user2
       const user2PostResponse = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + testUser2.accessToken)
+        .set("Cookie", [`accessToken=${testUser2.accessToken}`])
         .send({
           title: "User2 Post",
           content: "User2 Content",
@@ -210,7 +222,7 @@ describe("Cascade Delete Tests", () => {
       // Create comment by user1 on user2's post
       await request(app)
         .post("/comments")
-        .set("Authorization", "Bearer " + testUser1.accessToken)
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`])
         .send({ content: "User1 comment on user2 post", postId: user2PostId });
 
       // Verify data exists
@@ -225,7 +237,7 @@ describe("Cascade Delete Tests", () => {
       // Delete user1
       const deleteResponse = await request(app)
         .delete("/users")
-        .set("Authorization", "Bearer " + testUser1.accessToken);
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`]);
 
       expect(deleteResponse.statusCode).toBe(status.OK);
 
@@ -267,7 +279,7 @@ describe("Cascade Delete Tests", () => {
     test("should fail with invalid token", async () => {
       const response = await request(app)
         .delete("/users")
-        .set("Authorization", "Bearer invalid-token");
+        .set("Cookie", ["accessToken=invalid-token"]);
 
       expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
     });
@@ -281,7 +293,7 @@ describe("Cascade Delete Tests", () => {
       // Create a post by user1
       const postResponse = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + testUser1.accessToken)
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`])
         .send({
           title: "Post for comment tests",
           content: "Content",
@@ -293,7 +305,7 @@ describe("Cascade Delete Tests", () => {
       // Create a comment by user2 on user1's post
       const commentResponse = await request(app)
         .post("/comments")
-        .set("Authorization", "Bearer " + testUser2.accessToken)
+        .set("Cookie", [`accessToken=${testUser2.accessToken}`])
         .send({ content: "User2 comment", postId });
 
       commentId = commentResponse.body._id;
@@ -302,7 +314,7 @@ describe("Cascade Delete Tests", () => {
     test("comment author can delete their own comment", async () => {
       const response = await request(app)
         .delete(`/comments/${commentId}`)
-        .set("Authorization", "Bearer " + testUser2.accessToken);
+        .set("Cookie", [`accessToken=${testUser2.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
 
@@ -314,7 +326,7 @@ describe("Cascade Delete Tests", () => {
       // User1 (post owner) deleting user2's comment
       const response = await request(app)
         .delete(`/comments/${commentId}`)
-        .set("Authorization", "Bearer " + testUser1.accessToken);
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
 
@@ -333,12 +345,19 @@ describe("Cascade Delete Tests", () => {
       const response3 = await request(app)
         .post("/auth/register")
         .send(testUser3);
-      const user3Token = response3.body.accessToken;
+      const cookies3 = response3.header["set-cookie"] as unknown as string[] | undefined;
+      let user3Token = "";
+      if (cookies3) {
+        const accessTokenCookie = cookies3.find((c: string) => c.startsWith("accessToken="));
+        if (accessTokenCookie) {
+          user3Token = accessTokenCookie.split(";")[0].split("=")[1];
+        }
+      }
 
       // User3 tries to delete user2's comment on user1's post
       const response = await request(app)
         .delete(`/comments/${commentId}`)
-        .set("Authorization", "Bearer " + user3Token);
+        .set("Cookie", [`accessToken=${user3Token}`]);
 
       expect(response.statusCode).toBe(status.FORBIDDEN);
 
@@ -351,7 +370,7 @@ describe("Cascade Delete Tests", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .delete(`/comments/${nonExistentId}`)
-        .set("Authorization", "Bearer " + testUser1.accessToken);
+        .set("Cookie", [`accessToken=${testUser1.accessToken}`]);
 
       expect(response.statusCode).toBe(status.NOT_FOUND);
     });

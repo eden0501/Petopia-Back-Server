@@ -12,7 +12,7 @@ const router = express.Router();
  *     description: Retrieve a list of all users
  *     tags: [Users]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: A list of users
@@ -37,7 +37,7 @@ router.get("/", userController.get.bind(userController));
  *     description: Retrieve user's info
  *     tags: [Users]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: user info
@@ -50,11 +50,7 @@ router.get("/", userController.get.bind(userController));
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.get(
-  "/info",
-  authMiddleware,
-  userController.getUserInfo.bind(userController),
-);
+router.get("/info", userController.getUserInfo.bind(userController));
 
 /**
  * @swagger
@@ -71,7 +67,7 @@ router.get(
  *         required: true
  *         description: The user ID
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: The user description
@@ -98,7 +94,7 @@ router.get("/:id", userController.getById.bind(userController));
  *     description: Update the authenticated user's profile
  *     tags: [Users]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:

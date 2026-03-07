@@ -12,7 +12,7 @@ const router = express.Router();
  *     description: Retrieve a list of all comments
  *     tags: [Comments]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: A list of comments
@@ -44,7 +44,7 @@ router.get("/", commentController.get.bind(commentController));
  *         required: true
  *         description: The comment ID
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: The comment content and data
@@ -71,7 +71,7 @@ router.get("/:id", commentController.getById.bind(commentController));
  *     description: Create a new comment entry
  *     tags: [Comments]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -92,11 +92,7 @@ router.get("/:id", commentController.getById.bind(commentController));
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post(
-  "/",
-  authMiddleware,
-  commentController.create.bind(commentController),
-);
+router.post("/", commentController.create.bind(commentController));
 
 /**
  * @swagger
@@ -113,7 +109,7 @@ router.post(
  *         required: true
  *         description: The comment ID
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -153,7 +149,7 @@ router.put("/:id", commentController.replace.bind(commentController));
  *         required: true
  *         description: The comment ID
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: Comment successfully deleted

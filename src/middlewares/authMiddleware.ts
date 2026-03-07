@@ -7,13 +7,13 @@ import { AuthRequest } from "../types/authRequest";
 
 const authMiddleware = (req: AuthRequest, _: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies.accessToken;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!token) {
       throw new CustomError(status.UNAUTHORIZED, "Missing or invalid token");
     }
 
-    const { userId } = decodeToken(authHeader.split(" ")[1]);
+    const { userId } = decodeToken(token);
 
     if (!Types.ObjectId.isValid(userId)) {
       throw new CustomError(status.UNAUTHORIZED, "Invalid token payload");
