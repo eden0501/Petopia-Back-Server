@@ -4,7 +4,7 @@ import User from "../models/userModel";
 import { CustomError } from "../utils/errorUtils";
 import { NextFunction, Request, Response } from "express";
 import { decodeToken, generateTokens, getAuthCookiesOptions } from "../utils/token";
-import { OAuth2Client } from "google-auth-library";
+import { OAuth2Client, TokenPayload } from "google-auth-library";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -175,13 +175,18 @@ export const googleLogin = async (
       throw new CustomError(status.BAD_REQUEST, "Google credential is required");
     }
 
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    let payload: TokenPayload | undefined;
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
 
-    const payload = ticket.getPayload();
-    if (!payload || !payload.email) {
+      payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        throw "Invalid Google token";
+      }
+    } catch (error) {
       throw new CustomError(status.BAD_REQUEST, "Invalid Google token");
     }
 

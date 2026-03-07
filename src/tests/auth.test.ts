@@ -205,7 +205,7 @@ describe("Auth API", () => {
         credential: "invalid-token",
       });
 
-      expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
+      expect(response.statusCode).toBe(status.BAD_REQUEST);
       expect(response.body).toHaveProperty("error");
     });
 

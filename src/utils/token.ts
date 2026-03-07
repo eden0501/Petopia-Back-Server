@@ -18,11 +18,16 @@ export const decodeToken = (token: string, isRefreshToken = false) =>
 
 export const getAuthCookiesOptions = (token: string) => {
   const decoded: any = decode(token);
+
+  if (!decoded) {
+    throw new Error("Invalid token");
+  }
+
   const expiryDate = new Date(decoded.exp * 1000);
 
   return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    expires: expiryDate
+    expires: expiryDate,
   }
 };
