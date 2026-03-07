@@ -4,7 +4,6 @@ import User from "../models/userModel";
 import Comment from "../models/commentModel";
 import BaseController from "./baseController";
 import { NextFunction, Response } from "express";
-import { CustomError } from "../utils/errorUtils";
 import { AuthRequest } from "../types/authRequest";
 import { UserInterface } from "../types/userInterfaces";
 
@@ -53,7 +52,8 @@ class UserController extends BaseController<UserInterface> {
 
       await Post.deleteMany({ authorId: user?.id });
 
-      // TODO delete cookies too
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
 
       return res.status(status.OK).send("User successfully deleted");
     } catch (error) {
