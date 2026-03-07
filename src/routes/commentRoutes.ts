@@ -91,10 +91,7 @@ router.get("/:id", commentController.getById.bind(commentController));
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post(
-  "/",
-  commentController.create.bind(commentController),
-);
+router.post("/", commentController.create.bind(commentController));
 
 /**
  * @swagger

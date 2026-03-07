@@ -49,10 +49,7 @@ router.get("/", userController.get.bind(userController));
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.get(
-    "/info",
-    userController.getUserInfo.bind(userController),
-);
+router.get("/info", userController.getUserInfo.bind(userController));
 
 /**
  * @swagger

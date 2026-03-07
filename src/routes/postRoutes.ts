@@ -1,5 +1,6 @@
 import express from "express";
 import postController from "../controllers/postController";
+import authMiddleware from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -80,10 +81,7 @@ router.get("/", postController.get.bind(postController));
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.get(
-  "/batch",
-  postController.getBatch.bind(postController),
-);
+router.get("/batch", postController.getBatch.bind(postController));
 
 /**
  * @swagger
@@ -148,7 +146,7 @@ router.get("/:id", postController.getById.bind(postController));
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post("/", postController.create.bind(postController));
+router.post("/", authMiddleware, postController.create.bind(postController));
 
 /**
  * @swagger
@@ -220,10 +218,7 @@ router.put("/:id", postController.replace.bind(postController));
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-router.post(
-  "/like/:id",
-  postController.like.bind(postController),
-);
+router.post("/like/:id", postController.like.bind(postController));
 
 /**
  * @swagger
