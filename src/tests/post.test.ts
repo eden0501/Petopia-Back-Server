@@ -30,7 +30,7 @@ describe("Post API", () => {
       for (const post of postsData) {
         response = await request(app)
           .post("/posts")
-          .set("Authorization", "Bearer " + userData.accessToken)
+          .set("Cookie", [`accessToken=${userData.accessToken}`])
           .send(post);
 
         expect(response.statusCode).toBe(status.CREATED);
@@ -44,7 +44,7 @@ describe("Post API", () => {
     test("fail to create an empty post", async () => {
       const response = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send({});
 
       expect(response.statusCode).toBe(status.BAD_REQUEST);
@@ -58,7 +58,7 @@ describe("Post API", () => {
       };
       const response = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send(invalidPost);
 
       expect(response.statusCode).toBe(status.BAD_REQUEST);
@@ -76,7 +76,7 @@ describe("Post API", () => {
     test("fail to create post with missing required fields", async () => {
       const response = await request(app)
         .post("/posts")
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send({});
 
       expect(response.statusCode).toBe(status.BAD_REQUEST);
@@ -87,7 +87,7 @@ describe("Post API", () => {
     test("returns batch payload with posts array", async () => {
       const response = await request(app)
         .get("/posts/batch")
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(response.body).toHaveProperty("posts");
@@ -97,7 +97,7 @@ describe("Post API", () => {
     test("respects page and limit params", async () => {
       const response = await request(app)
         .get("/posts/batch?page=1&limit=2")
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(response.body.posts.length).toBeLessThanOrEqual(2);
@@ -109,7 +109,7 @@ describe("Post API", () => {
       const total = postsData.length;
       const response = await request(app)
         .get(`/posts/batch?page=${total}&limit=1`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(response.body.posts.length).toBeLessThanOrEqual(1);
@@ -120,7 +120,7 @@ describe("Post API", () => {
     test("filters by type", async () => {
       const response = await request(app)
         .get(`/posts/batch?type=${postsData[1].type}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(response.body.posts.every((p: { type: string }) => p.type === postsData[1].type)).toBe(true);
@@ -129,7 +129,7 @@ describe("Post API", () => {
     test("returns empty data for out-of-range page", async () => {
       const response = await request(app)
         .get("/posts/batch?page=9999&limit=10")
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(response.body.posts).toHaveLength(0);
@@ -147,7 +147,7 @@ describe("Post API", () => {
     test("get all posts", async () => {
       const response = await request(app)
         .get("/posts")
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(Array.isArray(response.body)).toBeTruthy();
@@ -157,7 +157,7 @@ describe("Post API", () => {
     test("get posts by filter (type)", async () => {
       const responseOther = await request(app)
         .get(`/posts?type=${postsData[0].type}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(responseOther.statusCode).toBe(status.OK);
       expect(Array.isArray(responseOther.body)).toBeTruthy();
@@ -166,7 +166,7 @@ describe("Post API", () => {
 
       const responseDonation = await request(app)
         .get(`/posts?type=${postsData[1].type}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(responseDonation.statusCode).toBe(status.OK);
       expect(responseDonation.body.length).toBeGreaterThanOrEqual(1);
@@ -184,7 +184,7 @@ describe("Post API", () => {
     test("get post by ID", async () => {
       const response = await request(app)
         .get(`/posts/${postId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
       expect(response.body.title).toBe(postsData[postsData.length - 1].title);
@@ -194,7 +194,7 @@ describe("Post API", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .get(`/posts/${nonExistentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.NOT_FOUND);
     });
@@ -211,7 +211,7 @@ describe("Post API", () => {
 
       const response = await request(app)
         .put(`/posts/${postId}`)
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send(postPayload);
 
       expect(response.statusCode).toBe(status.OK);
@@ -222,7 +222,7 @@ describe("Post API", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .put(`/posts/${nonExistentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send({
           ...postsData[0],
           authorId: userData._id,
@@ -235,7 +235,7 @@ describe("Post API", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .put(`/posts/${nonExistentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
         .send({});
 
       expect(response.statusCode).toBe(status.BAD_REQUEST);
@@ -259,7 +259,7 @@ describe("Post API", () => {
     test("like a post", async () => {
       const response = await request(app)
         .post(`/posts/like/${postId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
     });
@@ -267,13 +267,13 @@ describe("Post API", () => {
     test("like a post that is already liked (idempotent)", async () => {
       const response = await request(app)
         .post(`/posts/like/${postId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
 
       const postResponse = await request(app)
         .get(`/posts/${postId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(postResponse.body.likes).toHaveLength(1);
     });
@@ -289,7 +289,7 @@ describe("Post API", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .post(`/posts/like/${nonExistentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.NOT_FOUND);
     });
@@ -299,7 +299,7 @@ describe("Post API", () => {
     test("unlike a post", async () => {
       const response = await request(app)
         .post(`/posts/unlike/${postId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
     });
@@ -307,13 +307,13 @@ describe("Post API", () => {
     test("unlike a post that is already unliked (idempotent)", async () => {
       const response = await request(app)
         .post(`/posts/unlike/${postId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.OK);
 
       const postResponse = await request(app)
         .get(`/posts/${postId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(postResponse.body.likes).toHaveLength(0);
     });
@@ -329,7 +329,7 @@ describe("Post API", () => {
       const nonExistentId = new mongoose.Types.ObjectId();
       const response = await request(app)
         .post(`/posts/unlike/${nonExistentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken);
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.NOT_FOUND);
     });
