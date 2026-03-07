@@ -92,18 +92,11 @@ router.get("/:id", userController.getById.bind(userController));
 
 /**
  * @swagger
- * /users/{id}:
+ * /users:
  *   put:
- *     summary: Update a user
- *     description: Replace an existing user by ID
+ *     summary: Update current user
+ *     description: Update the authenticated user's profile
  *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: The user ID
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -128,6 +121,35 @@ router.get("/:id", userController.getById.bind(userController));
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.put("/:id", userController.replace.bind(userController));
+router.put(
+  "/",
+  authMiddleware,
+  userController.updateSelf.bind(userController),
+);
+
+/**
+ * @swagger
+ * /users:
+ *   delete:
+ *     summary: Delete current user
+ *     description: Delete the authenticated user and all their associated data (posts and comments)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User and all associated data successfully deleted
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.delete(
+  "/",
+  authMiddleware,
+  userController.deleteSelf.bind(userController),
+);
 
 export default router;

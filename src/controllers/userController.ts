@@ -1,7 +1,10 @@
 import status from "http-status";
+import Post from "../models/postModel";
 import User from "../models/userModel";
+import Comment from "../models/commentModel";
 import BaseController from "./baseController";
 import { NextFunction, Response } from "express";
+import { CustomError } from "../utils/errorUtils";
 import { AuthRequest } from "../types/authRequest";
 import { UserInterface } from "../types/userInterfaces";
 
@@ -13,6 +16,46 @@ class UserController extends BaseController<UserInterface> {
         .lean();
 
       return res.status(status.OK).json(userInfo);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async updateSelf(
+    { user, body }: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const updatedData = await User.findByIdAndUpdate(user?.id, body, {
+        new: true,
+        runValidators: true,
+      });
+
+      return res.status(status.OK).json(updatedData);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deleteSelf({ user }: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      await User.findByIdAndDelete(user?.id);
+
+      const userPosts = await Post.find({ authorId: user?.id });
+
+      await Comment.deleteMany({
+        $or: [
+          { authorId: user?.id },
+          { postId: { $in: userPosts.map((post) => post._id) } },
+        ],
+      });
+
+      await Post.deleteMany({ authorId: user?.id });
+
+      // TODO delete cookies too
+
+      return res.status(status.OK).send("User successfully deleted");
     } catch (error) {
       return next(error);
     }

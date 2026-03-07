@@ -334,4 +334,17 @@ describe("Post API", () => {
       expect(response.statusCode).toBe(status.NOT_FOUND);
     });
   });
+
+  describe("Post Model Validation", () => {
+    test("fail to create post with non-existent authorId", async () => {
+      const nonExistentAuthorId = new mongoose.Types.ObjectId();
+
+      await expect(
+        Post.create({
+          ...postsData[0],
+          authorId: nonExistentAuthorId,
+        }),
+      ).rejects.toThrow("Author does not exist");
+    });
+  });
 });

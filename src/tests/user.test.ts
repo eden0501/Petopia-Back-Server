@@ -124,47 +124,24 @@ describe("User API", () => {
     });
   });
 
-  describe("PUT /users/:id", () => {
+  describe("PUT /users", () => {
     test("should update user", async () => {
-      const updatedData = { ...userData, petsCount: 5 };
       const response = await request(app)
-        .put(`/users/${userData._id}`)
+        .put("/users")
         .set("Authorization", "Bearer " + userData.accessToken)
-        .send(updatedData);
+        .send({ petsCount: 5 });
 
       expect(response.statusCode).toBe(status.OK);
       expect(response.body.petsCount).toBe(5);
     });
 
     test("should fail to update user without authentication", async () => {
-      const updatedData = { ...userData, petsCount: 10 };
       const response = await request(app)
-        .put(`/users/${userData._id}`)
-        .send(updatedData);
+        .put("/users")
+        .send({ petsCount: 10 });
 
       expect(response.statusCode).toBe(status.UNAUTHORIZED);
       expect(response.body).toHaveProperty("error");
-    });
-
-    test("should fail to update non-existent user", async () => {
-      const nonExistentId = new mongoose.Types.ObjectId();
-      const updatedData = { ...userData, petsCount: 10 };
-      const response = await request(app)
-        .put(`/users/${nonExistentId}`)
-        .set("Authorization", "Bearer " + userData.accessToken)
-        .send(updatedData);
-
-      expect(response.statusCode).toBe(status.NOT_FOUND);
-    });
-
-    test("should fail to update user with invalid ID format", async () => {
-      const updatedData = { ...userData, petsCount: 10 };
-      const response = await request(app)
-        .put("/users/invalid-id")
-        .set("Authorization", "Bearer " + userData.accessToken)
-        .send(updatedData);
-
-      expect(response.statusCode).toBe(status.BAD_REQUEST);
     });
   });
 });

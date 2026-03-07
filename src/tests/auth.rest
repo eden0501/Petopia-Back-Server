@@ -3,10 +3,10 @@ POST  http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-  "email": "user@gmail.com",
-  "password": "password123",
-  "username": "user-name",
-  "dateOfBirth": "2003-05-01",
+  "email": "eden03.b@gmail.com",
+  "password": "123456",
+  "username": "eden",
+  "petOwnerSince": "2003-05-01",
   "petsCount": "2"
 }
 
