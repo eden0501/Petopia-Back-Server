@@ -11,11 +11,13 @@ jest.mock("@google/generative-ai", () => {
         GoogleGenerativeAI: jest.fn().mockImplementation(() => {
             return {
                 getGenerativeModel: jest.fn().mockReturnValue({
-                    generateContent: jest.fn().mockResolvedValue({
-                        response: {
-                            text: () => "Mocked AI Response: Use consistency and positive reinforcement."
-                        }
-                    }),
+                    startChat: jest.fn().mockReturnValue({
+                        sendMessage: jest.fn().mockResolvedValue({
+                            response: {
+                                text: () => "Mocked AI Response: Use consistency and positive reinforcement."
+                            }
+                        })
+                    })
                 }),
             };
         }),
@@ -40,7 +42,7 @@ describe("Chat API", () => {
         test("successfully get AI response", async () => {
             const response = await request(app)
                 .post("/chat")
-                .set("Authorization", "Bearer " + userData.accessToken)
+                .set("Cookie", [`accessToken=${userData.accessToken}`])
                 .send({ message: "How do I train my dog?" });
 
             expect(response.statusCode).toBe(status.OK);
@@ -51,7 +53,7 @@ describe("Chat API", () => {
         test("fail with missing message", async () => {
             const response = await request(app)
                 .post("/chat")
-                .set("Authorization", "Bearer " + userData.accessToken)
+                .set("Cookie", [`accessToken=${userData.accessToken}`])
                 .send({});
 
             expect(response.statusCode).toBe(status.BAD_REQUEST);
@@ -72,7 +74,7 @@ describe("Chat API", () => {
 
             const response = await request(app)
                 .post("/chat")
-                .set("Authorization", "Bearer " + userData.accessToken)
+                .set("Cookie", [`accessToken=${userData.accessToken}`])
                 .send({ message: "Hello" });
 
             expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);

@@ -1,24 +1,26 @@
 # Get a comment by id
 GET http://localhost:3000/comments/6959134d008c7f8f267eca0f
-Accept: application/json
+Content-Type: application/json
+Cookie: accessToken=<token>
 
 
 ###
 # Get comments by post
 GET http://localhost:3000/comments?postId=69590fb0b0961d8c8a7931d
-Accept: application/json
-Authorization: Bearer <TOKEN>
+Content-Type: application/json
+Cookie: accessToken=<token>
 
 
 ###
 # Add a new comment
 POST http://localhost:3000/comments
 Content-Type: application/json
+Cookie: accessToken=<token>
 
 {
-  "content": "This is a test comment",
-  "postId": "69590fb0b0961d8c8a7931de",
-  "authorId": "69590f00d8cfe5f37f38ca02"
+"content": "I'm coming to pick up, thank you!",
+  "postId": "69afe5d64a5303e0c78fcff3",
+  "authorId": "69a3ec7ca047a4059952f3e5"
 }
 
 
@@ -26,6 +28,7 @@ Content-Type: application/json
 # Update a comment
 PUT http://localhost:3000/comments/695915edbf28140b374f0d37
 Content-Type: application/json
+Cookie: accessToken=<token>
 
 {
   "content": "This is the new content of the comment",
@@ -37,3 +40,5 @@ Content-Type: application/json
 ###
 # Delete a comment
 DELETE http://localhost:3000/comments/695915edbf28140b374f0d33
+Content-Type: application/json
+Cookie: accessToken=<token>
