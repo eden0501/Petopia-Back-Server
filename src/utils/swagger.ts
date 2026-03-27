@@ -38,7 +38,7 @@ const options: swaggerJsdoc.Options = {
       schemas: {
         User: {
           type: "object",
-          required: ["email", "username"],
+          required: ["username", "password"],
           properties: {
             _id: {
               type: "string",
@@ -144,12 +144,12 @@ const options: swaggerJsdoc.Options = {
         },
         LoginRequest: {
           type: "object",
-          required: ["email", "password"],
+          required: ["username", "password"],
           properties: {
-            email: {
+            username: {
               type: "string",
-              format: "email",
-              example: "user@example.com",
+              format: "username",
+              example: "user123",
             },
             password: {
               type: "string",
@@ -159,7 +159,7 @@ const options: swaggerJsdoc.Options = {
         },
         RegisterRequest: {
           type: "object",
-          required: ["email", "password", "username"],
+          required: ["password", "username"],
           properties: {
             email: {
               type: "string",
@@ -211,7 +211,7 @@ const options: swaggerJsdoc.Options = {
             error: {
               type: "string",
               description: "Validation error message",
-              example: "Validation failed: Email is required",
+              example: "Validation failed: Username is required",
             },
           },
         },
@@ -285,7 +285,7 @@ const options: swaggerJsdoc.Options = {
                     items: {
                       type: "string",
                     },
-                    example: ["email"],
+                    example: ["username"],
                   },
                 },
               },

@@ -8,7 +8,7 @@ const router = express.Router();
  * /auth/login:
  *   post:
  *     summary: User login
- *     description: Authenticate user with email and password
+ *     description: Authenticate user with username and password
  *     tags: [Authentication]
  *     security: []
  *     requestBody:
@@ -46,7 +46,7 @@ router.post("/login", authController.login);
  * /auth/register:
  *   post:
  *     summary: Register a new user
- *     description: Create a new user account with email and password
+ *     description: Create a new user account with username and password
  *     tags: [Authentication]
  *     security: []
  *     requestBody:
@@ -70,6 +70,8 @@ router.post("/login", authController.login);
  *               $ref: '#/components/schemas/AuthResponse'
  *       400:
  *         $ref: '#/components/responses/ValidationError'
+ *       409:
+ *         $ref: '#/components/responses/ConflictError'
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */

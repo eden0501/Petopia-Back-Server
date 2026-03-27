@@ -9,7 +9,6 @@ import { CommentInterface } from "../types/commentInterfaces";
 
 export const userData = {
   username: "testUser",
-  email: "test@user.com",
   password: "password123",
   petOwnerSince: new Date("1990-01-01"),
   petsCount: 1,
@@ -43,7 +42,7 @@ export const commentsData = [
 ] as CommentInterface[];
 
 export const registerTestUser = async (app: Express) => {
-  await User.deleteMany({ email: userData.email });
+  await User.deleteMany({ username: userData.username });
 
   const response = await request(app)
     .post("/auth/register")
@@ -61,7 +60,7 @@ export const registerTestUser = async (app: Express) => {
       userData.refreshToken = refreshTokenCookie.split(";")[0].split("=")[1];
     }
 
-    const user = await User.findOne({ email: userData.email });
+    const user = await User.findOne({ username: userData.username });
 
     if (user) {
       userData._id = user._id;

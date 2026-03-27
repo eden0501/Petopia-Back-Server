@@ -1,8 +1,8 @@
 import { Document } from "mongoose";
 
 export interface UserInterface extends Document {
-  email: string;
   username: string;
+  email?: string;
   password?: string;
   petsCount?: number;
   petOwnerSince?: Date;
