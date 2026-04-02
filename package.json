@@ -14,7 +14,8 @@
     "test:post": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/post.test.ts",
     "test:user": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/user.test.ts",
     "test:auth": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/auth.test.ts",
-    "test:health": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/health.test.ts"
+    "test:health": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/health.test.ts",
+    "test:cascade-delete": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/cascade-delete.test.ts"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -39,8 +41,8 @@
     "ts-jest": "^29.4.6"
   },
   "devDependencies": {
-    "@types/cookie-parser": "^1.4.10",
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
