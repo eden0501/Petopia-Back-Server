@@ -1,0 +1,9 @@
+# Get AI pet care advice
+POST http://localhost:3000/chat
+Content-Type: application/json
+Cookie: accessToken=<token>
+
+{
+  "message": "How do I take care of a new golden retriever puppy?",
+  "history": []
+}

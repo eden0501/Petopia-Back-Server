@@ -59,27 +59,13 @@ class BaseController<T> {
     }
   }
 
-  async deleteById({ params }: Request, res: Response, next: NextFunction) {
+  async replace(
+    { params, body, user }: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
-      if (!params?.id) {
-        return next(
-          new CustomError(status.BAD_REQUEST, "ID parameter is required"),
-        );
-      }
-
-      const deletedData = await this.model.findByIdAndDelete(params.id);
-
-      return !deletedData
-        ? next(new CustomError(status.NOT_FOUND, "Data not found"))
-        : res.status(status.OK).send("Successfully deleted");
-    } catch (error) {
-      return next(error);
-    }
-  }
-
-  async replace({ params, body }: Request, res: Response, next: NextFunction) {
-    try {
-      if (isEmpty(body)) {
+      if (isEmpty(body) || isEmpty(user)) {
         return next(
           new CustomError(status.BAD_REQUEST, "Request body is required"),
         );
@@ -91,8 +77,8 @@ class BaseController<T> {
         );
       }
 
-      const updatedData = await this.model.findOneAndReplace(
-        { _id: params.id },
+      const updatedData = await this.model.findOneAndUpdate(
+        { _id: params.id, authorId: user.id },
         body,
         {
           new: true,

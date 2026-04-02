@@ -22,9 +22,23 @@ Content-Type: application/json
 
 
 ###
+# login with google
+POST  http://localhost:3000/auth/google
+Content-Type: application/json
+
+{
+  "credential": "<GOOGLE_JWT_TOKEN>"
+}
+
+
+###
 # refresh user's session token
 POST  http://localhost:3000/auth/refresh-token
+Content-Type: application/json
+Cookie: refreshToken=<token>
 
 ###
 # logout user
 POST  http://localhost:3000/auth/logout
+Content-Type: application/json
+Cookie: refreshToken=<token>

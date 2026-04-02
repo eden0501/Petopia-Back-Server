@@ -1,4 +1,5 @@
 import express from "express";
+import authMiddleware from "../middlewares/authMiddleware";
 import commentController from "../controllers/commentController";
 
 const router = express.Router();
@@ -138,7 +139,7 @@ router.put("/:id", commentController.replace.bind(commentController));
  * /comments/{id}:
  *   delete:
  *     summary: Delete a comment
- *     description: Delete a comment by ID
+ *     description: Delete a comment by ID. Only the comment author or the post owner can delete the comment.
  *     tags: [Comments]
  *     parameters:
  *       - in: path
@@ -158,9 +159,15 @@ router.put("/:id", commentController.replace.bind(commentController));
  *         $ref: '#/components/responses/NotFoundError'
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden - You can only delete your own comments
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.delete("/:id", commentController.deleteById.bind(commentController));
+router.delete(
+  "/:id",
+  authMiddleware,
+  commentController.deleteById.bind(commentController),
+);
 
 export default router;

@@ -1,5 +1,6 @@
 import status from "http-status";
 import Post from "../models/postModel";
+import Comment from "../models/commentModel";
 import BaseController from "./baseController";
 import { NextFunction, Response } from "express";
 import { CustomError } from "../utils/errorUtils";
@@ -94,6 +95,46 @@ class PostController extends BaseController<PostInterface> {
       }
 
       return res.status(status.OK).json(post);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async deleteById(
+    { params, user }: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const userId = user?.id;
+      if (!params?.id || !userId) {
+        return next(
+          new CustomError(
+            status.BAD_REQUEST,
+            "Post ID and User ID are required",
+          ),
+        );
+      }
+
+      const post = await Post.findById(params.id);
+
+      if (!post) {
+        return next(new CustomError(status.NOT_FOUND, "Post not found"));
+      }
+
+      if (post.authorId?.toString() !== userId.toString()) {
+        return next(
+          new CustomError(
+            status.FORBIDDEN,
+            "You can only delete your own posts",
+          ),
+        );
+      }
+
+      await post.deleteOne();
+      await Comment.deleteMany({ postId: params.id });
+
+      return res.status(status.OK).send("Successfully deleted");
     } catch (error) {
       return next(error);
     }
