@@ -215,5 +215,16 @@ describe("Auth API", () => {
       expect(response.statusCode).toBe(status.BAD_REQUEST);
       expect(response.body).toHaveProperty("error");
     });
+
+    test("fail to login with password for Google-only user", async () => {
+      // The google user was created in the first test of this describe block
+      const response = await request(app).post("/auth/login").send({
+        email: "googleuser@example.com",
+        password: "anypassword123",
+      });
+
+      expect(response.statusCode).toBe(status.FORBIDDEN);
+      expect(response.body.error).toContain("Google");
+    });
   });
 });

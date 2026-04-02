@@ -14,7 +14,8 @@
     "test:post": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/post.test.ts",
     "test:user": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/user.test.ts",
     "test:auth": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/auth.test.ts",
-    "test:health": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/health.test.ts"
+    "test:health": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/health.test.ts",
+    "test:cascade-delete": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/cascade-delete.test.ts"
   },
   "repository": {
     "type": "git",
@@ -40,7 +41,6 @@
     "ts-jest": "^29.4.6"
   },
   "devDependencies": {
-    "@types/cookie-parser": "^1.4.10",
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",

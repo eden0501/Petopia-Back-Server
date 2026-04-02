@@ -255,4 +255,40 @@ router.post(
   postController.unlike.bind(postController),
 );
 
+/**
+ * @swagger
+ * /posts/{id}:
+ *   delete:
+ *     summary: Delete a post
+ *     description: Delete a post by ID. Only the author can delete their own post.
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The post ID
+ *     responses:
+ *       200:
+ *         description: Post successfully deleted
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden - You can only delete your own posts
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.delete(
+  "/:id",
+  authMiddleware,
+  postController.deleteById.bind(postController),
+);
+
 export default router;
