@@ -47,14 +47,28 @@ Cookie: accessToken=<token>
 
 
 ###
+# Delete a post
+DELETE http://localhost:3000/posts/693d6f4cf91d8fc96c6a3cf9
+Content-Type: application/json
+Cookie: accessToken=<token>
+
+
+###
 # Like a post
-POST http://localhost:3000/posts/693d6f4cf91d8fc96c6a3cf9/like
+POST http://localhost:3000/posts/like/693d6f4cf91d8fc96c6a3cf9
 Content-Type: application/json
 Cookie: accessToken=<token>
 
 
 ###
 # Unlike a post
-POST http://localhost:3000/posts/693d6f4cf91d8fc96c6a3cf9/unlike
+POST http://localhost:3000/posts/unlike/693d6f4cf91d8fc96c6a3cf9
+Content-Type: application/json
+Cookie: accessToken=<token>
+
+
+###
+# Get posts in batch (paginated)
+GET http://localhost:3000/posts/batch?page=0&limit=10
 Content-Type: application/json
 Cookie: accessToken=<token>

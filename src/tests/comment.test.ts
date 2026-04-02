@@ -88,6 +88,15 @@ describe("Comment API", () => {
       expect(response.statusCode).toBe(status.BAD_REQUEST);
       expect(response.body).toHaveProperty("error");
     });
+
+    test("fail to create comment without authentication", async () => {
+      const response = await request(app)
+        .post("/comments")
+        .send({ content: "Unauthenticated comment", postId });
+
+      expect(response.statusCode).toBe(status.UNAUTHORIZED);
+      expect(response.body).toHaveProperty("error");
+    });
   });
 
   describe("GET /comments", () => {

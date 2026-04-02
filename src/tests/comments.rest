@@ -1,3 +1,10 @@
+# Get all comments
+GET http://localhost:3000/comments
+Content-Type: application/json
+Cookie: accessToken=<token>
+
+
+###
 # Get a comment by id
 GET http://localhost:3000/comments/6959134d008c7f8f267eca0f
 Content-Type: application/json
@@ -6,7 +13,7 @@ Cookie: accessToken=<token>
 
 ###
 # Get comments by post
-GET http://localhost:3000/comments?postId=69590fb0b0961d8c8a7931d
+GET http://localhost:3000/comments?postId=69590fb0b0961d8c8a7931de
 Content-Type: application/json
 Cookie: accessToken=<token>
 

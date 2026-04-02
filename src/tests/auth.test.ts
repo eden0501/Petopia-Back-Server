@@ -157,6 +157,66 @@ describe("Auth API", () => {
       expect(response.statusCode).toBe(status.BAD_REQUEST);
       expect(response.body).toHaveProperty("error");
     });
+
+    test("fail to refresh with reused (old) refresh token", async () => {
+      // Login to get fresh tokens
+      const loginRes = await request(app).post("/auth/login").send(userData);
+      const loginCookies = loginRes.header["set-cookie"] as unknown as string[];
+      const oldRefreshToken = loginCookies
+        .find((c: string) => c.startsWith("refreshToken="))!
+        .split(";")[0]
+        .split("=")[1];
+
+      // Wait so the new token will have a different iat
+      await new Promise((resolve) => setTimeout(resolve, 1100));
+
+      // Refresh once to invalidate the old token
+      const refreshRes = await request(app)
+        .post("/auth/refresh-token")
+        .set("Cookie", [`refreshToken=${oldRefreshToken}`]);
+      expect(refreshRes.statusCode).toBe(status.OK);
+
+      // Try to reuse the old refresh token - should be forbidden
+      const reuseRes = await request(app)
+        .post("/auth/refresh-token")
+        .set("Cookie", [`refreshToken=${oldRefreshToken}`]);
+
+      expect(reuseRes.statusCode).toBe(status.FORBIDDEN);
+      expect(reuseRes.body).toHaveProperty("error");
+
+      // Re-login to restore valid tokens for subsequent tests
+      const reLoginRes = await request(app).post("/auth/login").send(userData);
+      const reLoginCookies = reLoginRes.header["set-cookie"] as unknown as string[];
+      userData.accessToken = reLoginCookies
+        .find((c: string) => c.startsWith("accessToken="))!
+        .split(";")[0]
+        .split("=")[1];
+      userData.refreshToken = reLoginCookies
+        .find((c: string) => c.startsWith("refreshToken="))!
+        .split(";")[0]
+        .split("=")[1];
+    });
+
+    test("fail to refresh when user no longer exists", async () => {
+      const uniqueSuffix = Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+      const tempUser = { username: "tempRefresh_" + uniqueSuffix, email: "tempRefresh_" + uniqueSuffix + "@test.com", password: "password123" };
+      const regRes = await request(app).post("/auth/register").send(tempUser);
+      expect(regRes.statusCode).toBe(status.CREATED);
+
+      const regCookies = regRes.header["set-cookie"] as unknown as string[];
+      const tempRefreshToken = regCookies
+        .find((c: string) => c.startsWith("refreshToken="))!
+        .split(";")[0]
+        .split("=")[1];
+
+      await User.deleteOne({ username: tempUser.username });
+
+      const response = await request(app)
+        .post("/auth/refresh-token")
+        .set("Cookie", [`refreshToken=${tempRefreshToken}`]);
+
+      expect(response.statusCode).toBe(status.UNAUTHORIZED);
+    });
   });
 
   describe("POST /auth/logout", () => {
@@ -174,6 +234,27 @@ describe("Auth API", () => {
 
       expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
       expect(response.body).toHaveProperty("error");
+    });
+
+    test("fail to logout when user no longer exists", async () => {
+      const uniqueSuffix = Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+      const tempUser = { username: "tempLogout_" + uniqueSuffix, email: "tempLogout_" + uniqueSuffix + "@test.com", password: "password123" };
+      const regRes = await request(app).post("/auth/register").send(tempUser);
+      expect(regRes.statusCode).toBe(status.CREATED);
+
+      const regCookies = regRes.header["set-cookie"] as unknown as string[];
+      const tempRefreshToken = regCookies
+        .find((c: string) => c.startsWith("refreshToken="))!
+        .split(";")[0]
+        .split("=")[1];
+
+      await User.deleteOne({ username: tempUser.username });
+
+      const response = await request(app)
+        .post("/auth/logout")
+        .set("Cookie", [`refreshToken=${tempRefreshToken}`]);
+
+      expect(response.statusCode).toBe(status.UNAUTHORIZED);
     });
 
     test("logout user successfully", async () => {
@@ -216,10 +297,23 @@ describe("Auth API", () => {
       expect(response.body).toHaveProperty("error");
     });
 
+    test("re-login existing google user", async () => {
+      // The google user was created in the first google test
+      const response = await request(app).post("/auth/google").send({
+        credential: "valid-google-token",
+      });
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.header["set-cookie"]).toBeDefined();
+    });
+
     test("fail to login with password for Google-only user", async () => {
       // The google user was created in the first test of this describe block
+      const googleUser = await User.findOne({ googleId: "google123" });
+      expect(googleUser).not.toBeNull();
+
       const response = await request(app).post("/auth/login").send({
-        email: "googleuser@example.com",
+        username: googleUser!.username,
         password: "anypassword123",
       });
 
