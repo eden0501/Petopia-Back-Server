@@ -13,7 +13,7 @@ Cookie: accessToken=<token>
 
 ###
 # Get posts by author
-GET http://localhost:3000/posts?authorId=693d6e2f3ce1b793c84003cf
+GET http://localhost:3000/posts?authorId=69cebc9700d29dcd169aef6d
 Content-Type: application/json
 Cookie: accessToken=<token>
 
@@ -27,42 +27,39 @@ Cookie: accessToken=<token>
 {
   "title": "Hello World",
   "content": "This is a test post",
-  "type": "Other",
-  "authorId": "693d6e2f3ce1b793c84003cf"
+  "type": "Other"
 }
 
 
 ###
 # Update a post
-PUT http://localhost:3000/posts/693d6f4cf91d8fc96c6a3cf9
+PUT http://localhost:3000/posts/69cec0b462b66ed449aae5d3
 Content-Type: application/json
 Cookie: accessToken=<token>
 
 {
-  "title": "Hello World",
   "content": "This is an updated test post",
-  "type": "Donation",
-  "authorId": "693d6e2f3ce1b793c84003cf"
+  "type": "Donation"
 }
 
 
 ###
 # Delete a post
-DELETE http://localhost:3000/posts/693d6f4cf91d8fc96c6a3cf9
+DELETE http://localhost:3000/posts/69cec0b462b66ed449aae5d3
 Content-Type: application/json
 Cookie: accessToken=<token>
 
 
 ###
 # Like a post
-POST http://localhost:3000/posts/like/693d6f4cf91d8fc96c6a3cf9
+POST http://localhost:3000/posts/like/69cebd3100d29dcd169aef92
 Content-Type: application/json
 Cookie: accessToken=<token>
 
 
 ###
 # Unlike a post
-POST http://localhost:3000/posts/unlike/693d6f4cf91d8fc96c6a3cf9
+POST http://localhost:3000/posts/unlike/69cebd3100d29dcd169aef92
 Content-Type: application/json
 Cookie: accessToken=<token>
 

@@ -6,14 +6,14 @@ Cookie: accessToken=<token>
 
 ###
 # Get a user by id
-GET http://localhost:3000/users/69590f00d8cfe5f37f38ca02
+GET http://localhost:3000/users/69cebc9700d29dcd169aef6d
 Content-Type: application/json
 Cookie: accessToken=<token>
 
 
 ###
 # Get users by username
-GET http://localhost:3000/users?username=eden0501
+GET http://localhost:3000/users?username=user-name
 Content-Type: application/json
 Cookie: accessToken=<token>
 
