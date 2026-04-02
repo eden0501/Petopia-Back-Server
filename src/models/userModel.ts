@@ -2,15 +2,16 @@ import mongoose from "mongoose";
 import { UserInterface } from "../types/userInterfaces";
 
 const userSchema = new mongoose.Schema<UserInterface>({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
   username: {
     type: String,
     required: true,
     unique: true,
+  },
+  email: {
+    type: String,
+    required: function (this: UserInterface) {
+      return Boolean(this.googleId);
+    },
   },
   password: {
     type: String,
@@ -21,11 +22,11 @@ const userSchema = new mongoose.Schema<UserInterface>({
   },
   petOwnerSince: {
     type: Date,
-    required: false
+    required: false,
   },
   petsCount: {
     type: Number,
-    required: false
+    required: false,
   },
   profilePicture: {
     type: String,

@@ -91,7 +91,7 @@ describe("Auth API", () => {
     test("fail to login with wrong password", async () => {
       const response = await request(app)
         .post("/auth/login")
-        .send({ email: userData.email, password: "wrong-password" });
+        .send({ username: userData.username, password: "wrong-password" });
 
       expect(response.statusCode).toBe(status.FORBIDDEN);
       expect(response.body).toHaveProperty("error");
@@ -99,7 +99,7 @@ describe("Auth API", () => {
 
     test("fail to login with non-existent user", async () => {
       const response = await request(app).post("/auth/login").send({
-        email: "nonexistent@example.com",
+        username: "nonexistentuser",
         password: "password123",
       });
 
@@ -108,15 +108,15 @@ describe("Auth API", () => {
     });
 
     test("fail to login with missing properties", async () => {
-      const missingEmailRes = await request(app).post("/auth/login").send({
+      const missingUsernameRes = await request(app).post("/auth/login").send({
         password: userData.password,
       });
 
-      expect(missingEmailRes.statusCode).toBe(status.BAD_REQUEST);
-      expect(missingEmailRes.body).toHaveProperty("error");
+      expect(missingUsernameRes.statusCode).toBe(status.BAD_REQUEST);
+      expect(missingUsernameRes.body).toHaveProperty("error");
 
       const missingPasswordRes = await request(app).post("/auth/login").send({
-        email: userData.email,
+        username: userData.username,
       });
 
       expect(missingPasswordRes.statusCode).toBe(status.BAD_REQUEST);

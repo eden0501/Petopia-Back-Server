@@ -9,18 +9,18 @@ import { OAuth2Client, TokenPayload } from "google-auth-library";
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const validateBody = ({
-  email,
+  username,
   password,
   ...additionalInfo
 }: Record<string, never>) => {
-  if (!email || !password) {
+  if (!username || !password) {
     throw new CustomError(
       status.BAD_REQUEST,
-      "Email and password are required",
+      "Username and password are required",
     );
   }
 
-  return { email, password, ...additionalInfo };
+  return { username, password, ...additionalInfo };
 };
 
 export const register = async (
@@ -29,13 +29,13 @@ export const register = async (
   next: NextFunction,
 ) => {
   try {
-    const { email, password, ...additionalInfo } = validateBody(body);
+    const { username, password, ...additionalInfo } = validateBody(body);
 
     const salt = await bcrypt.genSalt(10);
     const encryptedPassword = await bcrypt.hash(password, salt);
 
     const user = new User({
-      email,
+      username,
       password: encryptedPassword,
       ...additionalInfo,
     });
@@ -59,9 +59,9 @@ export const login = async (
   next: NextFunction,
 ) => {
   try {
-    const { email, password } = validateBody(body);
+    const { username, password } = validateBody(body);
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ username }).select("+password");
 
     if (!user) {
       throw new CustomError(status.NOT_FOUND, "User not found");
@@ -74,7 +74,7 @@ export const login = async (
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      throw new CustomError(status.FORBIDDEN, "Invalid email or password");
+      throw new CustomError(status.FORBIDDEN, "Invalid username or password");
     }
 
     const tokens = generateTokens(user._id.toString());
