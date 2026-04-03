@@ -215,7 +215,6 @@ describe("Comment API", () => {
     });
 
     test("post author can delete comment on their post", async () => {
-      // Create a second user
       const secondUser = {
         username: "secondUser",
         email: "second@user.com",
@@ -236,7 +235,6 @@ describe("Comment API", () => {
         }
       }
 
-      // Second user creates a comment on first user's post
       const commentResponse = await request(app)
         .post("/comments")
         .set("Cookie", [`accessToken=${secondUserToken}`])
@@ -245,7 +243,6 @@ describe("Comment API", () => {
       expect(commentResponse.statusCode).toBe(status.CREATED);
       const secondUserCommentId = commentResponse.body._id;
 
-      // First user (post author) deletes second user's comment
       const deleteResponse = await request(app)
         .delete(`/comments/${secondUserCommentId}`)
         .set("Cookie", [`accessToken=${userData.accessToken}`]);
@@ -257,7 +254,6 @@ describe("Comment API", () => {
     });
 
     test("fail to delete another user's comment on another user's post", async () => {
-      // Create a third user
       const thirdUser = {
         username: "thirdUser",
         email: "third@user.com",
@@ -278,7 +274,6 @@ describe("Comment API", () => {
         }
       }
 
-      // First user creates a comment on their own post
       const commentResponse = await request(app)
         .post("/comments")
         .set("Cookie", [`accessToken=${userData.accessToken}`])
@@ -287,7 +282,6 @@ describe("Comment API", () => {
       expect(commentResponse.statusCode).toBe(status.CREATED);
       const firstUserCommentId = commentResponse.body._id;
 
-      // Third user tries to delete first user's comment on first user's post
       const deleteResponse = await request(app)
         .delete(`/comments/${firstUserCommentId}`)
         .set("Cookie", [`accessToken=${thirdUserToken}`]);
@@ -295,7 +289,6 @@ describe("Comment API", () => {
       expect(deleteResponse.statusCode).toBe(status.FORBIDDEN);
       expect(deleteResponse.body).toHaveProperty("error");
 
-      // Verify comment still exists
       const check = await Comment.findById(firstUserCommentId);
       expect(check).not.toBeNull();
     });
