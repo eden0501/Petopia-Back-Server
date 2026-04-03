@@ -179,7 +179,6 @@ describe("Auth API", () => {
     });
 
     test("fail to refresh with reused (old) refresh token", async () => {
-      // Login to get fresh tokens
       const loginRes = await request(app).post("/auth/login").send(userData);
       const loginCookies = loginRes.header["set-cookie"] as unknown as string[];
       const oldRefreshToken = loginCookies
@@ -187,16 +186,13 @@ describe("Auth API", () => {
         .split(";")[0]
         .split("=")[1];
 
-      // Wait so the new token will have a different iat
       await new Promise((resolve) => setTimeout(resolve, 1100));
 
-      // Refresh once to invalidate the old token
       const refreshRes = await request(app)
         .post("/auth/refresh-token")
         .set("Cookie", [`refreshToken=${oldRefreshToken}`]);
       expect(refreshRes.statusCode).toBe(status.OK);
 
-      // Try to reuse the old refresh token - should be forbidden
       const reuseRes = await request(app)
         .post("/auth/refresh-token")
         .set("Cookie", [`refreshToken=${oldRefreshToken}`]);
@@ -204,7 +200,6 @@ describe("Auth API", () => {
       expect(reuseRes.statusCode).toBe(status.FORBIDDEN);
       expect(reuseRes.body).toHaveProperty("error");
 
-      // Re-login to restore valid tokens for subsequent tests
       const reLoginRes = await request(app).post("/auth/login").send(userData);
       const reLoginCookies = reLoginRes.header[
         "set-cookie"
