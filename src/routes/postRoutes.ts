@@ -1,4 +1,5 @@
 import express from "express";
+import { upload } from "../middlewares/uploadMiddleware";
 import postController from "../controllers/postController";
 import authMiddleware from "../middlewares/authMiddleware";
 
@@ -146,7 +147,7 @@ router.get("/:id", postController.getById.bind(postController));
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.post("/", authMiddleware, postController.create.bind(postController));
+router.post("/", authMiddleware, upload.single("image"), postController.create.bind(postController));
 
 /**
  * @swagger
@@ -186,7 +187,7 @@ router.post("/", authMiddleware, postController.create.bind(postController));
  *       500:
  *         $ref: '#/components/responses/ServerError'
  */
-router.put("/:id", postController.replace.bind(postController));
+router.put("/:id", authMiddleware, upload.single("image"), postController.replace.bind(postController));
 
 /**
  * @swagger
