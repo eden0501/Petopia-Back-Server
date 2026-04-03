@@ -331,7 +331,6 @@ describe("Auth API", () => {
     });
 
     test("re-login existing google user", async () => {
-      // The google user was created in the first google test
       const response = await request(app).post("/auth/google").send({
         credential: "valid-google-token",
       });
@@ -341,7 +340,6 @@ describe("Auth API", () => {
     });
 
     test("fail to login with password for Google-only user", async () => {
-      // The google user was created in the first test of this describe block
       const googleUser = await User.findOne({ googleId: "google123" });
       expect(googleUser).not.toBeNull();
 
