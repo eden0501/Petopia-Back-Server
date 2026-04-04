@@ -10,7 +10,6 @@ import { PostTypes } from "../consts/postConsts";
 
 let app: Express;
 
-// Test user data
 const testUser1 = {
   username: "cascadeUser1",
   email: "cascade1@test.com",
@@ -37,20 +36,22 @@ afterAll(async () => {
 
 describe("Cascade Delete Tests", () => {
   beforeEach(async () => {
-    // Clean up before each test
     await Comment.deleteMany({});
     await Post.deleteMany({});
     await User.deleteMany({});
 
-    // Register test users
     const response1 = await request(app).post("/auth/register").send({
       username: testUser1.username,
       email: testUser1.email,
       password: testUser1.password,
     });
-    const cookies1 = response1.header["set-cookie"] as unknown as string[] | undefined;
+    const cookies1 = response1.header["set-cookie"] as unknown as
+      | string[]
+      | undefined;
     if (cookies1) {
-      const accessTokenCookie = cookies1.find((c: string) => c.startsWith("accessToken="));
+      const accessTokenCookie = cookies1.find((c: string) =>
+        c.startsWith("accessToken="),
+      );
       if (accessTokenCookie) {
         testUser1.accessToken = accessTokenCookie.split(";")[0].split("=")[1];
       }
@@ -63,9 +64,13 @@ describe("Cascade Delete Tests", () => {
       email: testUser2.email,
       password: testUser2.password,
     });
-    const cookies2 = response2.header["set-cookie"] as unknown as string[] | undefined;
+    const cookies2 = response2.header["set-cookie"] as unknown as
+      | string[]
+      | undefined;
     if (cookies2) {
-      const accessTokenCookie = cookies2.find((c: string) => c.startsWith("accessToken="));
+      const accessTokenCookie = cookies2.find((c: string) =>
+        c.startsWith("accessToken="),
+      );
       if (accessTokenCookie) {
         testUser2.accessToken = accessTokenCookie.split(";")[0].split("=")[1];
       }
@@ -76,7 +81,6 @@ describe("Cascade Delete Tests", () => {
 
   describe("DELETE /posts/:id - Cascade delete comments", () => {
     test("should delete post and all its comments", async () => {
-      // Create a post
       const postResponse = await request(app)
         .post("/posts")
         .set("Cookie", [`accessToken=${testUser1.accessToken}`])
@@ -88,7 +92,6 @@ describe("Cascade Delete Tests", () => {
 
       const postId = postResponse.body._id;
 
-      // Create comments on the post
       await request(app)
         .post("/comments")
         .set("Cookie", [`accessToken=${testUser1.accessToken}`])
@@ -99,28 +102,23 @@ describe("Cascade Delete Tests", () => {
         .set("Cookie", [`accessToken=${testUser2.accessToken}`])
         .send({ content: "Comment 2", postId });
 
-      // Verify comments exist
       const commentsBefore = await Comment.find({ postId });
       expect(commentsBefore.length).toBe(2);
 
-      // Delete the post
       const deleteResponse = await request(app)
         .delete(`/posts/${postId}`)
         .set("Cookie", [`accessToken=${testUser1.accessToken}`]);
 
       expect(deleteResponse.statusCode).toBe(status.OK);
 
-      // Verify post is deleted
       const postAfter = await Post.findById(postId);
       expect(postAfter).toBeNull();
 
-      // Verify all comments are deleted
       const commentsAfter = await Comment.find({ postId });
       expect(commentsAfter.length).toBe(0);
     });
 
     test("should not delete post if user is not the author", async () => {
-      // Create a post by user1
       const postResponse = await request(app)
         .post("/posts")
         .set("Cookie", [`accessToken=${testUser1.accessToken}`])
@@ -132,14 +130,12 @@ describe("Cascade Delete Tests", () => {
 
       const postId = postResponse.body._id;
 
-      // Try to delete with user2
       const deleteResponse = await request(app)
         .delete(`/posts/${postId}`)
         .set("Cookie", [`accessToken=${testUser2.accessToken}`]);
 
       expect(deleteResponse.statusCode).toBe(status.FORBIDDEN);
 
-      // Verify post still exists
       const postAfter = await Post.findById(postId);
       expect(postAfter).not.toBeNull();
     });
@@ -173,7 +169,6 @@ describe("Cascade Delete Tests", () => {
 
   describe("DELETE /users - Delete self with cascade", () => {
     test("should delete user and all their posts and comments", async () => {
-      // Create posts by user1
       const post1Response = await request(app)
         .post("/posts")
         .set("Cookie", [`accessToken=${testUser1.accessToken}`])
@@ -195,19 +190,16 @@ describe("Cascade Delete Tests", () => {
       const post1Id = post1Response.body._id;
       const post2Id = post2Response.body._id;
 
-      // Create comments by user1 on their own posts
       await request(app)
         .post("/comments")
         .set("Cookie", [`accessToken=${testUser1.accessToken}`])
         .send({ content: "User1 comment on post1", postId: post1Id });
 
-      // Create comments by user2 on user1's posts
       await request(app)
         .post("/comments")
         .set("Cookie", [`accessToken=${testUser2.accessToken}`])
         .send({ content: "User2 comment on user1 post", postId: post1Id });
 
-      // Create a post by user2
       const user2PostResponse = await request(app)
         .post("/posts")
         .set("Cookie", [`accessToken=${testUser2.accessToken}`])
@@ -219,53 +211,44 @@ describe("Cascade Delete Tests", () => {
 
       const user2PostId = user2PostResponse.body._id;
 
-      // Create comment by user1 on user2's post
       await request(app)
         .post("/comments")
         .set("Cookie", [`accessToken=${testUser1.accessToken}`])
         .send({ content: "User1 comment on user2 post", postId: user2PostId });
 
-      // Verify data exists
       const user1PostsBefore = await Post.find({ authorId: testUser1._id });
       expect(user1PostsBefore.length).toBe(2);
 
       const user1CommentsBefore = await Comment.find({
         authorId: testUser1._id,
       });
-      expect(user1CommentsBefore.length).toBe(2); // 1 on own post, 1 on user2's post
+      expect(user1CommentsBefore.length).toBe(2);
 
-      // Delete user1
       const deleteResponse = await request(app)
         .delete("/users")
         .set("Cookie", [`accessToken=${testUser1.accessToken}`]);
 
       expect(deleteResponse.statusCode).toBe(status.OK);
 
-      // Verify user1 is deleted
       const user1After = await User.findById(testUser1._id);
       expect(user1After).toBeNull();
 
-      // Verify all user1's posts are deleted
       const user1PostsAfter = await Post.find({ authorId: testUser1._id });
       expect(user1PostsAfter.length).toBe(0);
 
-      // Verify all comments by user1 are deleted
       const user1CommentsAfter = await Comment.find({
         authorId: testUser1._id,
       });
       expect(user1CommentsAfter.length).toBe(0);
 
-      // Verify comments on user1's posts are deleted (even those by user2)
       const commentsOnUser1Posts = await Comment.find({
         postId: { $in: [post1Id, post2Id] },
       });
       expect(commentsOnUser1Posts.length).toBe(0);
 
-      // Verify user2's post still exists
       const user2PostAfter = await Post.findById(user2PostId);
       expect(user2PostAfter).not.toBeNull();
 
-      // Verify user2 still exists
       const user2After = await User.findById(testUser2._id);
       expect(user2After).not.toBeNull();
     });
@@ -290,7 +273,6 @@ describe("Cascade Delete Tests", () => {
     let commentId: string;
 
     beforeEach(async () => {
-      // Create a post by user1
       const postResponse = await request(app)
         .post("/posts")
         .set("Cookie", [`accessToken=${testUser1.accessToken}`])
@@ -302,7 +284,6 @@ describe("Cascade Delete Tests", () => {
 
       postId = postResponse.body._id;
 
-      // Create a comment by user2 on user1's post
       const commentResponse = await request(app)
         .post("/comments")
         .set("Cookie", [`accessToken=${testUser2.accessToken}`])
@@ -323,7 +304,6 @@ describe("Cascade Delete Tests", () => {
     });
 
     test("post owner can delete comments on their post", async () => {
-      // User1 (post owner) deleting user2's comment
       const response = await request(app)
         .delete(`/comments/${commentId}`)
         .set("Cookie", [`accessToken=${testUser1.accessToken}`]);
@@ -335,7 +315,6 @@ describe("Cascade Delete Tests", () => {
     });
 
     test("other users cannot delete comments they don't own on posts they don't own", async () => {
-      // Create a third user
       const testUser3 = {
         username: "cascadeUser3",
         email: "cascade3@test.com",
@@ -345,23 +324,25 @@ describe("Cascade Delete Tests", () => {
       const response3 = await request(app)
         .post("/auth/register")
         .send(testUser3);
-      const cookies3 = response3.header["set-cookie"] as unknown as string[] | undefined;
+      const cookies3 = response3.header["set-cookie"] as unknown as
+        | string[]
+        | undefined;
       let user3Token = "";
       if (cookies3) {
-        const accessTokenCookie = cookies3.find((c: string) => c.startsWith("accessToken="));
+        const accessTokenCookie = cookies3.find((c: string) =>
+          c.startsWith("accessToken="),
+        );
         if (accessTokenCookie) {
           user3Token = accessTokenCookie.split(";")[0].split("=")[1];
         }
       }
 
-      // User3 tries to delete user2's comment on user1's post
       const response = await request(app)
         .delete(`/comments/${commentId}`)
         .set("Cookie", [`accessToken=${user3Token}`]);
 
       expect(response.statusCode).toBe(status.FORBIDDEN);
 
-      // Verify comment still exists
       const commentAfter = await Comment.findById(commentId);
       expect(commentAfter).not.toBeNull();
     });

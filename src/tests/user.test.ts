@@ -143,5 +143,46 @@ describe("User API", () => {
       expect(response.statusCode).toBe(status.UNAUTHORIZED);
       expect(response.body).toHaveProperty("error");
     });
+
+    test("should update user profile picture", async () => {
+      const response = await request(app)
+        .put("/users")
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
+        .send({ profilePicture: "https://example.com/pic.jpg" });
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body.profilePicture).toBe("https://example.com/pic.jpg");
+    });
+  });
+
+  describe("DELETE /users", () => {
+    test("should delete user and cascade", async () => {
+      const uniqueSuffix = Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+      const tempUser = { username: "delUser_" + uniqueSuffix, email: "delUser_" + uniqueSuffix + "@test.com", password: "password123" };
+      const regRes = await request(app).post("/auth/register").send(tempUser);
+      expect(regRes.statusCode).toBe(status.CREATED);
+
+      const cookies = regRes.header["set-cookie"] as unknown as string[];
+      const tempToken = cookies
+        .find((c: string) => c.startsWith("accessToken="))!
+        .split(";")[0]
+        .split("=")[1];
+
+      const response = await request(app)
+        .delete("/users")
+        .set("Cookie", [`accessToken=${tempToken}`]);
+
+      expect(response.statusCode).toBe(status.OK);
+
+      const check = await User.findOne({ username: tempUser.username });
+      expect(check).toBeNull();
+    });
+
+    test("should fail to delete user without authentication", async () => {
+      const response = await request(app).delete("/users");
+
+      expect(response.statusCode).toBe(status.UNAUTHORIZED);
+      expect(response.body).toHaveProperty("error");
+    });
   });
 });

@@ -21,15 +21,21 @@ class UserController extends BaseController<UserInterface> {
   }
 
   async updateSelf(
-    { user, body }: AuthRequest,
+    { user, body, file }: AuthRequest,
     res: Response,
     next: NextFunction,
   ) {
     try {
-      const updatedData = await User.findByIdAndUpdate(user?.id, body, {
-        new: true,
-        runValidators: true,
-      });
+      const profilePicture = file ? `/uploads/${file.filename}` : undefined;
+
+      const updatedData = await User.findByIdAndUpdate(
+        user?.id,
+        { ...body, ...(profilePicture && { profilePicture }) },
+        {
+          new: true,
+          runValidators: true,
+        },
+      );
 
       return res.status(status.OK).json(updatedData);
     } catch (error) {
