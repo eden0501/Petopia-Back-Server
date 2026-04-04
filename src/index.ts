@@ -1,4 +1,7 @@
+import fs from "fs";
+import https from "https";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 import initApp from "./server";
@@ -6,7 +9,20 @@ import initApp from "./server";
 const PORT = process.env.PORT || 3000;
 
 initApp().then((app) => {
-  app.listen(PORT, () => {
+  let serverInstance;
+
+  serverInstance =
+    process.env.NODE_ENV === "production"
+      ? https.createServer(
+          {
+            key: fs.readFileSync(process.env.HTTPS_KEY_PATH || ""),
+            cert: fs.readFileSync(process.env.HTTPS_CERT_PATH || ""),
+          },
+          app,
+        )
+      : app;
+
+  serverInstance.listen(PORT, () => {
     console.log(`Petopia Server listening on port: ${PORT}`);
   });
 });
