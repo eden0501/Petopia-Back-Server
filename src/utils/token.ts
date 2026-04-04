@@ -17,17 +17,17 @@ export const decodeToken = (token: string, isRefreshToken = false) =>
   };
 
 export const getAuthCookiesOptions = (token: string) => {
-  const decoded: any = decode(token);
+  const decoded = decode(token);
 
-  if (!decoded) {
+  if (!decoded || typeof decoded === "string") {
     throw new Error("Invalid token");
   }
 
-  const expiryDate = new Date(decoded.exp * 1000);
+  const expiryDate = new Date(decoded.exp! * 1000);
 
   return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     expires: expiryDate,
-  }
+  };
 };

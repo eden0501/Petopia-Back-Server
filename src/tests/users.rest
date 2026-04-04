@@ -6,27 +6,39 @@ Cookie: accessToken=<token>
 
 ###
 # Get a user by id
-GET http://localhost:3000/users/69590f00d8cfe5f37f38ca02
+GET http://localhost:3000/users/69cebc9700d29dcd169aef6d
 Content-Type: application/json
 Cookie: accessToken=<token>
 
 
 ###
 # Get users by username
-GET http://localhost:3000/users?username=eden0501
+GET http://localhost:3000/users?username=user-name
 Content-Type: application/json
 Cookie: accessToken=<token>
 
 
 ###
-# Update a user
-PUT http://localhost:3000/users/69590f00d8cfe5f37f38ca02
+# Get current user info
+GET http://localhost:3000/users/info
+Content-Type: application/json
+Cookie: accessToken=<token>
+
+
+###
+# Update current user
+PUT http://localhost:3000/users
 Content-Type: application/json
 Cookie: accessToken=<token>
 
 {
-  "username": "eden0501",
-  "password": "123456",
   "petOwnerSince": "2023-05-01",
-  "petsCount": "5"
+  "petsCount": 5
 }
+
+
+###
+# Delete current user (cascade deletes posts and comments)
+DELETE http://localhost:3000/users
+Content-Type: application/json
+Cookie: accessToken=<token>

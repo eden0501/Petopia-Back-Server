@@ -347,4 +347,61 @@ describe("Post API", () => {
       ).rejects.toThrow("Author does not exist");
     });
   });
+
+  describe("DELETE /posts/:id", () => {
+    let deletePostId: string;
+
+    beforeEach(async () => {
+      const response = await request(app)
+        .post("/posts")
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
+        .send(postsData[0]);
+      deletePostId = response.body._id;
+    });
+
+    test("delete own post", async () => {
+      const response = await request(app)
+        .delete(`/posts/${deletePostId}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.OK);
+
+      const check = await Post.findById(deletePostId);
+      expect(check).toBeNull();
+    });
+
+    test("fail to delete post without authentication", async () => {
+      const response = await request(app).delete(`/posts/${deletePostId}`);
+
+      expect(response.statusCode).toBe(status.UNAUTHORIZED);
+    });
+
+    test("fail to delete non-existent post", async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+      const response = await request(app)
+        .delete(`/posts/${nonExistentId}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`]);
+
+      expect(response.statusCode).toBe(status.NOT_FOUND);
+    });
+
+    test("fail to delete another user's post", async () => {
+      const uniqueSuffix = Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+      const secondUser = { username: "postDel_" + uniqueSuffix, email: "postDel_" + uniqueSuffix + "@test.com", password: "password123" };
+      const regRes = await request(app).post("/auth/register").send(secondUser);
+      expect(regRes.statusCode).toBe(status.CREATED);
+
+      const cookies = regRes.header["set-cookie"] as unknown as string[];
+      const secondToken = cookies
+        .find((c: string) => c.startsWith("accessToken="))!
+        .split(";")[0]
+        .split("=")[1];
+
+      const response = await request(app)
+        .delete(`/posts/${deletePostId}`)
+        .set("Cookie", [`accessToken=${secondToken}`]);
+
+      expect(response.statusCode).toBe(status.FORBIDDEN);
+    });
+  });
 });
