@@ -40,7 +40,11 @@ class BaseController<T> {
     }
   }
 
-  async create({ user, body }: AuthRequest, res: Response, next: NextFunction) {
+  async create(
+    { user, body, file }: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       if (isEmpty(body) || isEmpty(user)) {
         return next(
@@ -48,8 +52,11 @@ class BaseController<T> {
         );
       }
 
+      const imageUrl = file ? `/uploads/${file.filename}` : undefined;
+
       const createdData = await this.model.create({
         ...body,
+        ...(imageUrl && { imageUrl }),
         authorId: user.id,
       });
 
@@ -60,7 +67,7 @@ class BaseController<T> {
   }
 
   async replace(
-    { params, body, user }: AuthRequest,
+    { params, body, user, file }: AuthRequest,
     res: Response,
     next: NextFunction,
   ) {
@@ -77,9 +84,11 @@ class BaseController<T> {
         );
       }
 
+      const imageUrl = file ? `/uploads/${file.filename}` : undefined;
+
       const updatedData = await this.model.findOneAndUpdate(
         { _id: params.id, authorId: user.id },
-        body,
+        { ...body, ...(imageUrl && { imageUrl }) },
         {
           new: true,
           runValidators: true,

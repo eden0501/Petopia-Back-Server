@@ -1,4 +1,5 @@
 import express from "express";
+import { upload } from "../middlewares/uploadMiddleware";
 import userController from "../controllers/userController";
 import authMiddleware from "../middlewares/authMiddleware";
 
@@ -120,6 +121,7 @@ router.get("/:id", userController.getById.bind(userController));
 router.put(
   "/",
   authMiddleware,
+  upload.single("image"),
   userController.updateSelf.bind(userController),
 );
 

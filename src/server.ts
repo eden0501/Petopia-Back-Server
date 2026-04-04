@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import cors from "cors";
 import mongoose from "mongoose";
 import express, { Express } from "express";
@@ -14,6 +16,13 @@ import errorMiddleware from "./middlewares/errorMiddleware";
 
 const app = express();
 
+const publicDir = path.join(__dirname, "../public");
+const uploadsDir = path.join(publicDir, "uploads");
+
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 const initApp = () =>
   new Promise<Express>((resolve, reject) => {
     app.get("/", (_, res) => res.send("Health check"));
@@ -21,10 +30,14 @@ const initApp = () =>
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
     app.use(cookieParser());
-    app.use(cors({
-      origin: JSON.parse(process.env.CORS_ALLOWED_ORIGINS || "[]"),
-      credentials: true
-    }));
+    app.use(
+      cors({
+        origin: JSON.parse(process.env.CORS_ALLOWED_ORIGINS || "[]"),
+        credentials: true,
+      }),
+    );
+
+    app.use("/public", express.static(publicDir));
 
     app.use(
       "/api-docs",
