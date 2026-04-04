@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npx tsc && node ./dist/src/index.js",
-    "prod": "npx tsc -p tsconfig_prod.json && node ./dist/src/index.js",
+    "start": "tsc && node ./dist/src/index.js",
+    "prod": "tsc -p tsconfig_prod.json && node ./dist/src/index.js",
     "dev": "nodemon src/index.ts",
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",
