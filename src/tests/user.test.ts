@@ -1,3 +1,4 @@
+import path from "path";
 import request from "supertest";
 import initApp from "../server";
 import status from "http-status";
@@ -5,6 +6,8 @@ import { Express } from "express";
 import mongoose from "mongoose";
 import User from "../models/userModel";
 import { userData, registerTestUser } from "../utils/testUtils";
+
+const testImagePath = path.join(__dirname, "test-image.png");
 
 let app: Express;
 
@@ -152,6 +155,39 @@ describe("User API", () => {
 
       expect(response.statusCode).toBe(status.OK);
       expect(response.body.profilePicture).toBe("https://example.com/pic.jpg");
+    });
+
+    test("should upload profile picture image file", async () => {
+      const response = await request(app)
+        .put("/users")
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
+        .field("username", userData.username)
+        .attach("image", testImagePath);
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body.profilePicture).toMatch(/^\/uploads\/.+\.png$/);
+    });
+
+    test("should update user fields with image upload", async () => {
+      const response = await request(app)
+        .put("/users")
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
+        .field("petsCount", "3")
+        .attach("image", testImagePath);
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body.petsCount).toBe(3);
+      expect(response.body.profilePicture).toMatch(/^\/uploads\/.+\.png$/);
+    });
+
+    test("should update user without image via multipart", async () => {
+      const response = await request(app)
+        .put("/users")
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
+        .field("petsCount", "7");
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body.petsCount).toBe(7);
     });
   });
 
