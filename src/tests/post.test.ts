@@ -1,3 +1,4 @@
+import path from "path";
 import request from "supertest";
 import initApp from "../server";
 import status from "http-status";
@@ -6,6 +7,8 @@ import mongoose from "mongoose";
 import Post from "../models/postModel";
 import User from "../models/userModel";
 import { userData, postsData, registerTestUser } from "../utils/testUtils";
+
+const testImagePath = path.join(__dirname, "test-image.png");
 
 let app: Express;
 
@@ -332,6 +335,86 @@ describe("Post API", () => {
         .set("Cookie", [`accessToken=${userData.accessToken}`]);
 
       expect(response.statusCode).toBe(status.NOT_FOUND);
+    });
+  });
+
+  describe("POST /posts with image upload", () => {
+    test("create a post with an image file", async () => {
+      const response = await request(app)
+        .post("/posts")
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
+        .field("title", "Post with image")
+        .field("content", "This post has an uploaded image")
+        .field("type", "Other")
+        .attach("image", testImagePath);
+
+      expect(response.statusCode).toBe(status.CREATED);
+      expect(response.body.title).toBe("Post with image");
+      expect(response.body.imageUrl).toMatch(/^\/uploads\/.+\.png$/);
+    });
+
+    test("create a post without image via multipart", async () => {
+      const response = await request(app)
+        .post("/posts")
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
+        .field("title", "No image post")
+        .field("content", "This post has no image")
+        .field("type", "Other");
+
+      expect(response.statusCode).toBe(status.CREATED);
+      expect(response.body.imageUrl).toBeUndefined();
+    });
+
+    test("reject non-image file upload", async () => {
+      const response = await request(app)
+        .post("/posts")
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
+        .field("title", "Bad file post")
+        .field("content", "This should fail")
+        .field("type", "Other")
+        .attach("image", Buffer.from("not an image"), {
+          filename: "test.txt",
+          contentType: "text/plain",
+        });
+
+      expect(response.statusCode).toBe(status.INTERNAL_SERVER_ERROR);
+    });
+  });
+
+  describe("PUT /posts/:id with image upload", () => {
+    let imagePostId: string;
+
+    beforeAll(async () => {
+      const res = await request(app)
+        .post("/posts")
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
+        .send(postsData[0]);
+      imagePostId = res.body._id;
+    });
+
+    test("update a post with a new image", async () => {
+      const response = await request(app)
+        .put(`/posts/${imagePostId}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
+        .field("title", postsData[0].title)
+        .field("content", postsData[0].content)
+        .field("type", postsData[0].type)
+        .attach("image", testImagePath);
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body.imageUrl).toMatch(/^\/uploads\/.+\.png$/);
+    });
+
+    test("update a post without changing image", async () => {
+      const response = await request(app)
+        .put(`/posts/${imagePostId}`)
+        .set("Cookie", [`accessToken=${userData.accessToken}`])
+        .field("title", "Updated title no image change")
+        .field("content", postsData[0].content)
+        .field("type", postsData[0].type);
+
+      expect(response.statusCode).toBe(status.OK);
+      expect(response.body.title).toBe("Updated title no image change");
     });
   });
 

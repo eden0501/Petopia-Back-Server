@@ -1,6 +1,5 @@
 import path from "path";
 import multer from "multer";
-import { uniqueId } from "lodash";
 
 const storage = multer.diskStorage({
   destination: (_req, _file, callback) => {
@@ -9,7 +8,7 @@ const storage = multer.diskStorage({
   filename: (_req, file, callback) => {
     const ext = path.extname(file.originalname);
 
-    callback(null, `${uniqueId()}${ext}`);
+    callback(null, `${new Date().getTime()}${ext}`);
   },
 });
 
