@@ -3,4 +3,4 @@ export enum PostTypes {
     KNOWLEDGE = "Knowledge", 
     DONATION = "Donation", 
     OTHER = "Other",
-}
+};

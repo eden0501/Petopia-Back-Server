@@ -1,5 +1,6 @@
 import path from "path";
 import multer from "multer";
+import { MAX_FILE_SIZE } from "../consts";
 
 const storage = multer.diskStorage({
   destination: (_req, _file, callback) => {
@@ -26,4 +27,10 @@ const fileFilter = (
   }
 };
 
-export const upload = multer({ storage, fileFilter });
+export const upload = multer({
+  storage,
+  limits: {
+    fileSize: MAX_FILE_SIZE,
+  },
+  fileFilter,
+});
