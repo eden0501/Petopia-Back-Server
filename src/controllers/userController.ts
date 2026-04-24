@@ -10,11 +10,34 @@ import { UserInterface } from "../types/userInterfaces";
 class UserController extends BaseController<UserInterface> {
   async getUserInfo({ user }: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const userInfo = await User.findById(user?.id)
-        .populate(["likesCount", "postsCount", "commentsCount"])
-        .lean();
+      const userInfo = await User.findById(user?.id).lean();
 
-      return res.status(status.OK).json(userInfo);
+      const [stats] = await Post.aggregate([
+        { $match: { authorId: user?.id } },
+        {
+          $lookup: {
+            from: "comments",
+            localField: "_id",
+            foreignField: "postId",
+            as: "postComments",
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            postSCount: { $sum: 1 },
+            likesCount: { $sum: { $size: "$likes" } },
+            commentsCount: { $sum: { $size: "$postComments" } },
+          },
+        },
+      ]);
+
+      return res.status(status.OK).json({
+        ...userInfo,
+        postsCount: stats?.postSCount || 0,
+        likesCount: stats?.likesCount || 0,
+        commentsCount: stats?.commentsCount || 0,
+      });
     } catch (error) {
       return next(error);
     }

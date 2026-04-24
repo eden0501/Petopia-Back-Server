@@ -42,27 +42,6 @@ const userSchema = new mongoose.Schema<UserInterface>({
   },
 });
 
-userSchema.virtual("postsCount", {
-  ref: "Post",
-  localField: "_id",
-  foreignField: "authorId",
-  count: true,
-});
-
-userSchema.virtual("commentsCount", {
-  ref: "Comment",
-  localField: "_id",
-  foreignField: "authorId",
-  count: true,
-});
-
-userSchema.virtual("likesCount", {
-  ref: "Post",
-  localField: "_id",
-  foreignField: "likes",
-  count: true,
-});
-
 userSchema.set("toJSON", { virtuals: true });
 userSchema.set("toObject", { virtuals: true });
 
