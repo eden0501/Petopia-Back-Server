@@ -105,7 +105,7 @@ class ChatController {
             userContext +=
               "  Comments on this post: " +
               comments
-                .map((c: LeanComment) => '"' + c.content + '"')
+                .map((c: LeanComment) => "\"" + c.content + "\"")
                 .join(", ") +
               "\n";
           }
@@ -129,7 +129,7 @@ class ChatController {
         if (comments.length > 0) {
           userContext +=
             "  Top comments: " +
-            comments.map((c: LeanComment) => '"' + c.content + '"').join(", ") +
+            comments.map((c: LeanComment) => "\"" + c.content + "\"").join(", ") +
             "\n";
         }
       }
@@ -150,9 +150,9 @@ class ChatController {
         history: history || [],
       });
       const structuredPrompt =
-        'USER QUERY: "' +
+        "USER QUERY: \"" +
         message +
-        '"\n\nPlease respond as PetBot using the context provided in your system instructions.';
+        "\"\n\nPlease respond as PetBot using the context provided in your system instructions.";
 
       const result = await chatSession.sendMessage(structuredPrompt);
       const responseText = result.response.text();
