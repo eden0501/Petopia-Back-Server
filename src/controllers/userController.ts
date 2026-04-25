@@ -25,7 +25,7 @@ class UserController extends BaseController<UserInterface> {
         {
           $group: {
             _id: null,
-            postSCount: { $sum: 1 },
+            postsCount: { $sum: 1 },
             likesCount: { $sum: { $size: "$likes" } },
             commentsCount: { $sum: { $size: "$postComments" } },
           },
@@ -34,7 +34,7 @@ class UserController extends BaseController<UserInterface> {
 
       return res.status(status.OK).json({
         ...userInfo,
-        postsCount: stats?.postSCount || 0,
+        postsCount: stats?.postsCount || 0,
         likesCount: stats?.likesCount || 0,
         commentsCount: stats?.commentsCount || 0,
       });
