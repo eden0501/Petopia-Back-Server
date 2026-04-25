@@ -1,13 +1,27 @@
-import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
+import cors from "cors";
 import mongoose from "mongoose";
 import express, { Express } from "express";
+import cookieParser from "cookie-parser";
 
+import userRoutes from "./routes/userRoutes";
+import authRoutes from "./routes/authRoutes";
 import postRoutes from "./routes/postRoutes";
 import commentRoutes from "./routes/commentRoutes";
+import chatRoutes from "./routes/chatRoutes";
+import { swaggerUi, specs } from "./utils/swagger";
+import authMiddleware from "./middlewares/authMiddleware";
 import errorMiddleware from "./middlewares/errorMiddleware";
 
-dotenv.config();
 const app = express();
+
+const publicDir = path.join(__dirname, "../public");
+const uploadsDir = path.join(publicDir, "uploads");
+
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 const initApp = () =>
   new Promise<Express>((resolve, reject) => {
@@ -15,9 +29,39 @@ const initApp = () =>
 
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
+    app.use(cookieParser());
+    app.use(
+      cors({
+        origin: JSON.parse(process.env.CORS_ALLOWED_ORIGINS || "[]"),
+        credentials: true,
+      }),
+    );
 
+    app.use("/public", express.static(publicDir));
+
+    app.use(
+      "/api-docs",
+      swaggerUi.serve,
+      swaggerUi.setup(specs, {
+        explorer: true,
+        customCss: ".swagger-ui .topbar { display: none }",
+        customSiteTitle: "Petopia API Documentation",
+      }),
+    );
+
+    app.get("/api-docs.json", (_, res) => {
+      res.setHeader("Content-Type", "application/json");
+      res.send(specs);
+    });
+
+    app.use("/auth", authRoutes);
+
+    app.use(authMiddleware);
+
+    app.use("/users", userRoutes);
     app.use("/posts", postRoutes);
     app.use("/comments", commentRoutes);
+    app.use("/chat", chatRoutes);
     app.use(errorMiddleware);
 
     const dbUrl = process.env.DATABASE_URL;

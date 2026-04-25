@@ -1,38 +1,48 @@
+# Get all comments
+GET http://localhost:3000/comments
+Content-Type: application/json
+Cookie: accessToken=<token>
+
+
+###
 # Get a comment by id
-GET http://localhost:3000/comments/6959134d008c7f8f267eca0f
-Accept: application/json
+GET http://localhost:3000/comments/69a4a440890f047430228734
+Content-Type: application/json
+Cookie: accessToken=<token>
 
 
 ###
 # Get comments by post
-GET http://localhost:3000/comments?postId=69590fb0b0961d8c8a7931de
-Accept: application/json
+GET http://localhost:3000/comments?postId=69cec02100d29dcd169af015
+Content-Type: application/json
+Cookie: accessToken=<token>
 
 
 ###
 # Add a new comment
 POST http://localhost:3000/comments
 Content-Type: application/json
+Cookie: accessToken=<token>
 
 {
-  "content": "This is a test comment",
-  "postId": "69590fb0b0961d8c8a7931de",
-  "authorId": "69590f00d8cfe5f37f38ca02"
+  "content": "I'm coming to pick up, thank you!",
+  "postId": "69cec02100d29dcd169af015"
 }
 
 
 ###
 # Update a comment
-PUT http://localhost:3000/comments/695915edbf28140b374f0d37
+PUT http://localhost:3000/comments/69cec1d562b66ed449aae628
 Content-Type: application/json
+Cookie: accessToken=<token>
 
 {
-  "content": "This is the new content of the comment",
-  "postId": "69590fb0b0961d8c8a7931de",
-  "authorId": "69590f00d8cfe5f37f38ca02"
+  "content": "This is the new content of the comment"
 }
 
 
 ###
 # Delete a comment
-DELETE http://localhost:3000/comments/695915edbf28140b374f0d33
+DELETE http://localhost:3000/comments/69cec1d562b66ed449aae628
+Content-Type: application/json
+Cookie: accessToken=<token>

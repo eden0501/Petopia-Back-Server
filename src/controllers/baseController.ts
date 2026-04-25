@@ -1,9 +1,9 @@
+import status from "http-status";
 import { isEmpty } from "lodash";
 import { Model } from "mongoose";
-import status from "http-status";
-import { NextFunction, Request, Response } from "express";
-
 import { CustomError } from "../utils/errorUtils";
+import { AuthRequest } from "../types/authRequest";
+import { NextFunction, Request, Response } from "express";
 
 class BaseController<T> {
   model: Model<T>;
@@ -26,7 +26,7 @@ class BaseController<T> {
     try {
       if (!params?.id) {
         return next(
-          new CustomError(status.BAD_REQUEST, "ID parameter is required")
+          new CustomError(status.BAD_REQUEST, "ID parameter is required"),
         );
       }
 
@@ -40,15 +40,25 @@ class BaseController<T> {
     }
   }
 
-  async create({ body }: Request, res: Response, next: NextFunction) {
+  async create(
+    { user, body, file }: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
-      if (isEmpty(body)) {
+      if (isEmpty(body) || isEmpty(user)) {
         return next(
-          new CustomError(status.BAD_REQUEST, "Request body is required")
+          new CustomError(status.BAD_REQUEST, "Request body is required"),
         );
       }
 
-      const createdData = await this.model.create(body);
+      const imageUrl = file ? `/uploads/${file.filename}` : undefined;
+
+      const createdData = await this.model.create({
+        ...body,
+        ...(imageUrl && { imageUrl }),
+        authorId: user.id,
+      });
 
       return res.status(status.CREATED).json(createdData);
     } catch (error) {
@@ -56,45 +66,33 @@ class BaseController<T> {
     }
   }
 
-  async deleteById({ params }: Request, res: Response, next: NextFunction) {
+  async replace(
+    { params, body, user, file }: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
-      if (!params?.id) {
+      if (isEmpty(body) || isEmpty(user)) {
         return next(
-          new CustomError(status.BAD_REQUEST, "ID parameter is required")
-        );
-      }
-
-      const deletedData = await this.model.findByIdAndDelete(params.id);
-
-      return !deletedData
-        ? next(new CustomError(status.NOT_FOUND, "Data not found"))
-        : res.status(status.OK).send("Successfully deleted");
-    } catch (error) {
-      return next(error);
-    }
-  }
-
-  async replace({ params, body }: Request, res: Response, next: NextFunction) {
-    try {
-      if (isEmpty(body)) {
-        return next(
-          new CustomError(status.BAD_REQUEST, "Request body is required")
+          new CustomError(status.BAD_REQUEST, "Request body is required"),
         );
       }
 
       if (!params?.id) {
         return next(
-          new CustomError(status.BAD_REQUEST, "ID parameter is required")
+          new CustomError(status.BAD_REQUEST, "ID parameter is required"),
         );
       }
 
-      const updatedData = await this.model.findOneAndReplace(
-        { _id: params.id },
-        body,
+      const imageUrl = file ? `/uploads/${file.filename}` : undefined;
+
+      const updatedData = await this.model.findOneAndUpdate(
+        { _id: params.id, authorId: user.id },
+        { ...body, ...(imageUrl && { imageUrl }) },
         {
           new: true,
           runValidators: true,
-        }
+        },
       );
 
       return !updatedData

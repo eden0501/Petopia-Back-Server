@@ -1,6 +1,5 @@
-import mongoose from "mongoose";
-
 import User from "./userModel";
+import mongoose from "mongoose";
 import { PostTypes } from "../consts/postConsts";
 import { PostInterface } from "../types/postInterfaces";
 
@@ -27,7 +26,39 @@ const postSchema = new mongoose.Schema<PostInterface>({
     required: true,
     ref: "User",
   },
+  likes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: [],
+    },
+  ],
+  imageUrl: {
+    type: String,
+  },
+  hashtags: [
+    {
+      type: String,
+      default: [],
+    },
+  ],
 });
+
+postSchema.virtual("comments", {
+  ref: "Comment",
+  localField: "_id",
+  foreignField: "postId",
+});
+
+postSchema.virtual("author", {
+  ref: "User",
+  localField: "authorId",
+  foreignField: "_id",
+  justOne: true,
+});
+
+postSchema.set("toJSON", { virtuals: true });
+postSchema.set("toObject", { virtuals: true });
 
 postSchema.pre("validate", async function () {
   const isExist = await User.exists({ _id: this.authorId });

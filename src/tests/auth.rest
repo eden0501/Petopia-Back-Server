@@ -1,0 +1,44 @@
+# register a new user
+POST  http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "password": "password123",
+  "username": "user-name",
+  "petOwnerSince": "2023-05-01",
+  "petsCount": "2"
+}
+
+
+###
+# login an existing user
+POST  http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "username": "user-name",
+  "password": "password123"
+}
+
+
+###
+# login with google
+POST  http://localhost:3000/auth/google
+Content-Type: application/json
+
+{
+  "credential": "<GOOGLE_JWT_TOKEN>"
+}
+
+
+###
+# refresh user's session token
+POST  http://localhost:3000/auth/refresh-token
+Content-Type: application/json
+Cookie: refreshToken=<token>
+
+###
+# logout user
+POST  http://localhost:3000/auth/logout
+Content-Type: application/json
+Cookie: refreshToken=<token>

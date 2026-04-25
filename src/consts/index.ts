@@ -1,1 +1,1 @@
-export const UNKNOWN_ERROR = "An unknown error occurred";
+export const MAX_FILE_SIZE = 10 * 1024 * 1024;

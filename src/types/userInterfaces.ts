@@ -1,8 +1,12 @@
-import { Date } from "mongoose";
+import { Document } from "mongoose";
 
 export interface UserInterface extends Document {
   username: string;
-  password: string;
-  dateOfBirth: Date;
-  petsCount: number;
+  email?: string;
+  password?: string;
+  petsCount?: number;
+  petOwnerSince?: Date;
+  profilePicture?: string;
+  refreshToken?: string;
+  googleId?: string;
 }

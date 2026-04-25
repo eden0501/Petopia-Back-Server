@@ -7,19 +7,42 @@ const userSchema = new mongoose.Schema<UserInterface>({
     required: true,
     unique: true,
   },
+  email: {
+    type: String,
+    required: function (this: UserInterface) {
+      return Boolean(this.googleId);
+    },
+  },
   password: {
-    type: String, 
-    required: true,
-  }, 
-  dateOfBirth: {
-    type: Date, 
-    default: Date.now,
+    type: String,
+    select: false,
+    required: function (this: UserInterface) {
+      return !this.googleId;
+    },
+  },
+  petOwnerSince: {
+    type: Date,
+    required: false,
   },
   petsCount: {
-    type: Number, 
-    default: 0, 
-  }
+    type: Number,
+    required: false,
+  },
+  profilePicture: {
+    type: String,
+  },
+  refreshToken: {
+    select: false,
+    type: String,
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
 });
 
+userSchema.set("toJSON", { virtuals: true });
+userSchema.set("toObject", { virtuals: true });
 
 export default mongoose.model("User", userSchema);

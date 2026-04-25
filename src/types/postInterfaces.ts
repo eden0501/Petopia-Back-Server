@@ -7,4 +7,7 @@ export interface PostInterface extends Document {
   type: PostTypes;
   authorId: Types.ObjectId;
   createdAt: Date;
-};
+  imageUrl?: string;
+  hashtags?: string[];
+  likes: Types.ObjectId[];
+}

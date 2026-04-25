@@ -26,6 +26,16 @@ const commentSchema = new mongoose.Schema<CommentInterface>({
   },
 });
 
+commentSchema.virtual("author", {
+  ref: "User",
+  localField: "authorId",
+  foreignField: "_id",
+  justOne: true,
+});
+
+commentSchema.set("toJSON", { virtuals: true });
+commentSchema.set("toObject", { virtuals: true });
+
 commentSchema.pre("validate", async function () {
   const validationError = new mongoose.Error.ValidationError();
   const isPostExist = await Post.exists({ _id: this.postId });
@@ -37,7 +47,7 @@ commentSchema.pre("validate", async function () {
       new mongoose.Error.ValidatorError({
         message: "Post does not exist",
         path: "postId",
-      })
+      }),
     );
   }
 
@@ -47,7 +57,7 @@ commentSchema.pre("validate", async function () {
       new mongoose.Error.ValidatorError({
         message: "Author does not exist",
         path: "authorId",
-      })
+      }),
     );
   }
 
