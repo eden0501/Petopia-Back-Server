@@ -9,6 +9,7 @@ import { CustomError } from "../utils/errorUtils";
 import { AuthRequest } from "../types/authRequest";
 import { getSystemInstruction } from "../utils/chatUtils";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { COMMENT_PREVIEW_COUNT, COMMUNITY_POSTS_COUNT, USER_POSTS_COUNT } from "../consts/chatConsts";
 
 interface LeanPost {
   _id: Types.ObjectId;
@@ -53,25 +54,35 @@ class ChatController {
         );
       }
 
-      const user = await User.findById(userId).lean();
-      const totalPosts = await Post.countDocuments({ authorId: userId });
-      const userPosts = await Post.find({ authorId: userId })
-        .sort({ createdAt: -1 })
-        .limit(2)
-        .lean<LeanPost[]>();
-      const recentCommunityPosts = await Post.find({
-        authorId: { $ne: userId },
-      })
-        .sort({ createdAt: -1 })
-        .limit(3)
-        .populate("authorId", "username")
-        .lean<PopulatedPost[]>();
+      const [user, totalPosts, userPosts, recentCommunityPosts] =
+        await Promise.all([
+          User.findById(userId).lean(),
+          Post.countDocuments({ authorId: userId }),
+          Post.find({
+            authorId: userId,
+          })
+            .sort({ createdAt: -1 })
+            .limit(USER_POSTS_COUNT)
+            .lean<LeanPost[]>(),
+          Post.find({
+            authorId: { $ne: userId },
+          })
+            .sort({ createdAt: -1 })
+            .limit(COMMUNITY_POSTS_COUNT)
+            .populate("authorId", "username")
+            .lean<PopulatedPost[]>(),
+        ]);
 
       let userContext = "[Petopia User Profile]\n";
       if (user) {
         userContext += "- Username: " + user.username + "\n";
         userContext += "- Pets: " + user.petsCount + "\n";
-        userContext += "- Experience: " + (user.petOwnerSince ? "Since " + new Date(user.petOwnerSince).getFullYear() : "N/A") + "\n";
+        userContext +=
+          "- Experience: " +
+          (user.petOwnerSince
+            ? "Since " + new Date(user.petOwnerSince).getFullYear()
+            : "N/A") +
+          "\n";
         userContext += "- Total Posts Created: " + totalPosts + "\n";
       }
 
@@ -80,11 +91,23 @@ class ChatController {
         for (const p of userPosts) {
           const comments = await Comment.find({ postId: p._id })
             .sort({ createdAt: -1 })
-            .limit(2)
+            .limit(COMMENT_PREVIEW_COUNT)
             .lean<LeanComment[]>();
-          userContext += "- " + p.title + " (" + p.type + ") | Likes: " + (p.likes?.length || 0) + "\n";
+          userContext +=
+            "- " +
+            p.title +
+            " (" +
+            p.type +
+            ") | Likes: " +
+            (p.likes?.length || 0) +
+            "\n";
           if (comments.length > 0) {
-            userContext += "  Comments on this post: " + comments.map((c: LeanComment) => "\"" + c.content + "\"").join(", ") + "\n";
+            userContext +=
+              "  Comments on this post: " +
+              comments
+                .map((c: LeanComment) => '"' + c.content + '"')
+                .join(", ") +
+              "\n";
           }
         }
       }
@@ -93,11 +116,21 @@ class ChatController {
       for (const p of recentCommunityPosts) {
         const comments = await Comment.find({ postId: p._id })
           .sort({ createdAt: -1 })
-          .limit(2)
+          .limit(COMMENT_PREVIEW_COUNT)
           .lean<LeanComment[]>();
-        userContext += "- " + (p.authorId?.username || "Someone") + ": " + p.title + " | Likes: " + (p.likes?.length || 0) + "\n";
+        userContext +=
+          "- " +
+          (p.authorId?.username || "Someone") +
+          ": " +
+          p.title +
+          " | Likes: " +
+          (p.likes?.length || 0) +
+          "\n";
         if (comments.length > 0) {
-          userContext += "  Top comments: " + comments.map((c: LeanComment) => "\"" + c.content + "\"").join(", ") + "\n";
+          userContext +=
+            "  Top comments: " +
+            comments.map((c: LeanComment) => '"' + c.content + '"').join(", ") +
+            "\n";
         }
       }
 
@@ -116,7 +149,10 @@ class ChatController {
       const chatSession = model.startChat({
         history: history || [],
       });
-      const structuredPrompt = "USER QUERY: \"" + message + "\"\n\nPlease respond as PetBot using the context provided in your system instructions.";
+      const structuredPrompt =
+        'USER QUERY: "' +
+        message +
+        '"\n\nPlease respond as PetBot using the context provided in your system instructions.';
 
       const result = await chatSession.sendMessage(structuredPrompt);
       const responseText = result.response.text();
